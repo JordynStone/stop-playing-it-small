@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bold Traveler Compass — The Re-Entry Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #F8F6F0; }
+  body {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #3A3A3A;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  textarea:focus { border-color: #2C5F5D !important; }
+  button:active { transform: translateY(1px); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const TEAL = '#2C5F5D';
+const GOLD = '#D4A574';
+const CREAM = '#F8F6F0';
+const CORAL = '#E8A87C';
+const CHARCOAL = '#3A3A3A';
+
+const NEXT_LESSON_URL = 'https://www.skool.com/solo-and-fearless-3331/classroom/e6454d3e?md=2466cacd7da54f7694d54cefc5d63825';
+
+const IconCompass = ({ size = 28, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+  </svg>
+);
+
+const IconDownload = ({ size = 20, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+);
+
+const IconUpload = ({ size = 20, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="17 8 12 3 7 8"/>
+    <line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
+);
+
+const IconArrowRight = ({ size = 18, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+    <polyline points="12 5 19 12 12 19"/>
+  </svg>
+);
+
+const IconArrowLeft = ({ size = 18, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+
+const IconSparkle = ({ size = 18, color = GOLD }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
+  </svg>
+);
+
+const IconRefresh = ({ size = 20, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/>
+    <polyline points="1 20 1 14 7 14"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+  </svg>
+);
+
+const IconCheckCircle = ({ size = 22, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+    <polyline points="22 4 12 14.01 9 11.01"/>
+  </svg>
+);
+
+const IconClock = ({ size = 22, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+
+const IconCalendar = ({ size = 22, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/>
+    <line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+
+const commitmentOptions48 = [
+  { id: 'yes', label: 'Yes, I commit to the 48-hour debrief' },
+  { id: 'try', label: 'I will try' },
+  { id: 'not_sure', label: 'Not sure yet' },
+];
+
+const commitmentOptionsTwoWeek = [
+  { id: 'yes', label: 'Yes, I commit to the two-week shortlist' },
+  { id: 'try', label: 'I will try' },
+  { id: 'not_sure', label: 'Not sure yet' },
+];
+
+const PAGES = ['import', 'commitments', 'written', 'save', 'exported'];
+
+function BoldTravelerCompassM5L3() {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [importedData, setImportedData] = useState(null);
+  const [importError, setImportError] = useState(null);
+  const [commitment48, setCommitment48] = useState(null);
+  const [commitmentTwoWeek, setCommitmentTwoWeek] = useState(null);
+  const [writtenPath, setWrittenPath] = useState('');
+  const [blankText, setBlankText] = useState('');
+  const [stem1Text, setStem1Text] = useState('');
+  const [stem2Text, setStem2Text] = useState('');
+  const [hasExported, setHasExported] = useState(false);
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const page = PAGES[pageIndex];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pageIndex]);
+
+  const goNext = () => setPageIndex(i => Math.min(i + 1, PAGES.length - 1));
+  const goBack = () => setPageIndex(i => Math.max(i - 1, 0));
+
+  const handleRestart = () => setShowRestartConfirm(true);
+  const cancelRestart = () => setShowRestartConfirm(false);
+  const confirmRestart = () => {
+    setPageIndex(0);
+    setImportedData(null);
+    setImportError(null);
+    setCommitment48(null);
+    setCommitmentTwoWeek(null);
+    setWrittenPath('');
+    setBlankText('');
+    setStem1Text('');
+    setStem2Text('');
+    setHasExported(false);
+    setShowRestartConfirm(false);
+  };
+
+  const handleFileImport = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith('.json')) {
+      setImportError('That does not look like a Compass progress file. It should end in .json');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.sections || !data.sections.debriefTemplate) {
+          setImportError('This file is missing your Module 5 Lesson 2 answer. Make sure you are importing the BoldTraveler_Progress10.json file.');
+          return;
+        }
+        setImportedData(data);
+        setImportError(null);
+        goNext();
+      } catch (err) {
+        setImportError('Could not read this file. It may be corrupted. Try downloading it again from Module 5 Lesson 2.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const destination = importedData?.sections?.nextDestination?.destination || '';
+  const previous48Commitment = importedData?.sections?.debriefTemplate?.fortyEightHourCommitment || '';
+
+  const canAdvanceFromCommitments = commitment48 !== null && commitmentTwoWeek !== null;
+
+  const wrapStyle = {
+    fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif",
+    background: CREAM, color: CHARCOAL,
+    minHeight: '100vh', padding: '80px 32px 120px', lineHeight: 1.6,
+  };
+
+  const inner = { maxWidth: '720px', margin: '0 auto' };
+
+  const card = {
+    background: '#fff', borderRadius: '12px',
+    padding: '36px 32px 60px',
+    boxShadow: '0 2px 16px rgba(44, 95, 93, 0.08)',
+    marginBottom: '20px',
+  };
+
+  const headerBar = {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: '10px', marginBottom: '24px', paddingBottom: '14px',
+    borderBottom: `1px solid ${GOLD}40`,
+  };
+
+  const headerLeft = { display: 'flex', alignItems: 'center', gap: '10px' };
+
+  const headerTitle = {
+    fontSize: '13px', fontWeight: 600, color: TEAL,
+    letterSpacing: '1.2px', textTransform: 'uppercase',
+  };
+
+  const refreshBtn = {
+    background: 'transparent', border: 'none', color: TEAL,
+    cursor: 'pointer', padding: '6px', borderRadius: '6px',
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  };
+
+  const h1 = { fontSize: '26px', fontWeight: 700, color: TEAL, marginBottom: '8px', lineHeight: 1.25 };
+  const h2 = { fontSize: '20px', fontWeight: 600, color: TEAL, marginBottom: '14px', lineHeight: 1.3 };
+  const h3 = { fontSize: '16px', fontWeight: 600, color: TEAL, marginBottom: '10px', lineHeight: 1.3 };
+  const label = { fontSize: '12px', fontWeight: 600, color: GOLD, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '12px', display: 'block' };
+  const p = { fontSize: '15.5px', color: CHARCOAL, marginBottom: '14px', lineHeight: 1.65 };
+
+  const optionButton = (selected) => ({
+    width: '100%', textAlign: 'left', padding: '16px 18px', marginBottom: '10px',
+    border: `2px solid ${selected ? TEAL : '#E5E0D5'}`,
+    background: selected ? `${TEAL}0D` : '#fff',
+    borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14.5px',
+    color: CHARCOAL, fontWeight: selected ? 600 : 400, transition: 'all 0.15s ease',
+    display: 'flex', alignItems: 'center', gap: '12px',
+  });
+
+  const radioCircle = (selected) => ({
+    width: '20px', height: '20px', borderRadius: '50%',
+    border: `2px solid ${selected ? TEAL : '#C4BDB0'}`,
+    background: selected ? TEAL : 'transparent', flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  });
+
+  const radioDot = { width: '8px', height: '8px', borderRadius: '50%', background: '#fff' };
+
+  const primaryButton = (disabled) => ({
+    background: disabled ? '#C4BDB0' : TEAL, color: '#fff', border: 'none',
+    padding: '14px 24px', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px',
+  });
+
+  const backButton = {
+    background: 'transparent', color: TEAL,
+    border: `2px solid ${TEAL}40`,
+    padding: '14px 24px', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', fontWeight: 600, cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px',
+  };
+
+  const successButton = {
+    background: GOLD, color: '#fff', border: 'none', padding: '14px 24px',
+    borderRadius: '10px', fontFamily: 'inherit', fontSize: '15px', fontWeight: 600,
+    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px', textDecoration: 'none',
+  };
+
+  const pathButton = (selected) => ({
+    flex: 1, minWidth: '180px',
+    padding: '16px 20px',
+    border: `2px solid ${selected ? TEAL : '#E5E0D5'}`,
+    background: selected ? `${TEAL}0D` : '#fff',
+    borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit',
+    fontSize: '14.5px', fontWeight: selected ? 600 : 500,
+    color: selected ? TEAL : CHARCOAL,
+    transition: 'all 0.15s ease', textAlign: 'center',
+  });
+
+  const textareaStyle = {
+    width: '100%', minHeight: '110px',
+    padding: '14px 16px', border: `2px solid #E5E0D5`,
+    borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', color: CHARCOAL, lineHeight: 1.6,
+    resize: 'vertical', outline: 'none', background: '#FDFCF7',
+  };
+
+  const stemLabel = {
+    fontSize: '14px', fontStyle: 'italic', color: TEAL,
+    marginBottom: '10px', fontWeight: 500, display: 'block',
+  };
+
+  const hr = { border: 'none', borderTop: `1px solid ${GOLD}40`, margin: '24px 0' };
+
+  const navRow = {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    gap: '12px', marginTop: '8px', marginBottom: '32px', flexWrap: 'wrap',
+  };
+
+  const successCard = {
+    background: `${GOLD}15`, border: `2px solid ${GOLD}`,
+    borderRadius: '12px', padding: '28px 24px', marginBottom: '20px', textAlign: 'center',
+  };
+
+  const errorBox = {
+    background: `${CORAL}20`, border: `1px solid ${CORAL}`,
+    borderRadius: '8px', padding: '12px 16px',
+    fontSize: '14px', color: CHARCOAL, marginBottom: '16px',
+  };
+
+  const restoredPill = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    background: `${TEAL}10`,
+    border: `1px solid ${TEAL}30`,
+    borderRadius: '999px',
+    padding: '6px 12px',
+    fontSize: '12px',
+    color: TEAL,
+    fontWeight: 600,
+    marginBottom: '16px',
+    letterSpacing: '0.3px',
+  };
+
+  const commitmentBox = {
+    background: '#FDFCF7',
+    border: '1px solid #E5E0D5',
+    borderRadius: '10px',
+    padding: '22px 24px',
+    marginBottom: '20px',
+  };
+
+  const commitmentHeader = {
+    display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px',
+  };
+
+  const commitmentWindowLabel = {
+    fontSize: '11.5px', fontWeight: 600, color: GOLD,
+    letterSpacing: '1.5px', textTransform: 'uppercase',
+  };
+
+  const previousAnswerHint = {
+    background: `${TEAL}06`,
+    borderLeft: `3px solid ${TEAL}30`,
+    padding: '10px 14px',
+    fontSize: '13px',
+    color: '#6B6B6B',
+    fontStyle: 'italic',
+    marginBottom: '14px',
+    borderRadius: '0 6px 6px 0',
+  };
+
+  const modalOverlay = {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(58, 58, 58, 0.55)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 1000, padding: '24px',
+  };
+
+  const modalCard = {
+    background: '#fff', borderRadius: '12px',
+    padding: '32px 28px', maxWidth: '440px', width: '100%',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+  };
+
+  const Header = () => (
+    <div style={headerBar}>
+      <div style={headerLeft}>
+        <IconCompass size={22} />
+        <div style={headerTitle}>Bold Traveler Compass</div>
+      </div>
+      <button style={refreshBtn} onClick={handleRestart} title="Start over" aria-label="Start over">
+        <IconRefresh size={20} color={TEAL} />
+      </button>
+    </div>
+  );
+
+  const RestartModal = () => (
+    <div style={modalOverlay} onClick={cancelRestart}>
+      <div style={modalCard} onClick={(e) => e.stopPropagation()}>
+        <h2 style={{...h2, marginBottom: '12px'}}>Start over?</h2>
+        <p style={p}>
+          This will clear everything on this page and bring you back to the beginning.
+        </p>
+        <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: '24px'}}>
+          If you have already downloaded a progress file, you can import it again next time.
+        </p>
+        <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', flexWrap: 'wrap'}}>
+          <button style={backButton} onClick={cancelRestart}>Keep my answers</button>
+          <button style={{...primaryButton(false), background: CORAL}} onClick={confirmRestart}>
+            Yes, start over
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const handleExport = () => {
+    const commitment48Label = commitmentOptions48.find(o => o.id === commitment48)?.label || '';
+    const commitmentTwoWeekLabel = commitmentOptionsTwoWeek.find(o => o.id === commitmentTwoWeek)?.label || '';
+
+    const updatedData = {
+      ...importedData,
+      version: (importedData?.version || 1) + 1,
+      lastCompleted: 'Module 5 Lesson 3 — The Re-Entry Plan',
+      timestamp: new Date().toISOString(),
+      sections: {
+        ...importedData.sections,
+        reEntryPlan: {
+          status: 'committed',
+          fortyEightHourDebrief: {
+            choice: commitment48,
+            label: commitment48Label,
+          },
+          twoWeekShortlist: {
+            choice: commitmentTwoWeek,
+            label: commitmentTwoWeekLabel,
+          },
+          writtenReflection: {
+            path: writtenPath || null,
+            blankBox: blankText.trim() || null,
+            stems: {
+              rememberWhenPushedBack: stem1Text.trim() || null,
+              versionWhoCameHome: stem2Text.trim() || null,
+            },
+          },
+          tripContext: {
+            destination: destination,
+          },
+        },
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(updatedData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'BoldTraveler_Progress11.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setHasExported(true);
+    goNext();
+  };
+
+  const renderPage = () => {
+    if (page === 'import') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Welcome back</div>
+          <h1 style={h1}>Bring your Compass with you.</h1>
+          <p style={p}>
+            Import your progress file to add the re-entry plan.
+          </p>
+          <p style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: '20px'}}>
+            Look for <strong style={{color: TEAL}}>BoldTraveler_Progress10.json</strong> on your device.
+          </p>
+
+          {importError && <div style={errorBox}>{importError}</div>}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            onChange={handleFileImport}
+            style={{display: 'none'}}
+          />
+          <button style={primaryButton(false)} onClick={() => fileInputRef.current?.click()}>
+            <IconUpload />
+            Choose my progress file
+          </button>
+
+          <hr style={hr} />
+
+          <div style={{...p, fontSize: '13px', color: '#6B6B6B', marginBottom: 0}}>
+            Cannot find the file? Go back to Module 5 Lesson 2 and download from there.
+          </div>
+          <div style={{minHeight: '24px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'commitments') {
+      return (
+        <div style={card}>
+          <Header />
+
+          <div style={restoredPill}>
+            <IconCheckCircle size={14} color={TEAL} />
+            Progress restored
+          </div>
+
+          <div style={label}>Module 5 · Lesson 3</div>
+          <h1 style={h1}>Two windows. Two actions.</h1>
+          <p style={{...p, marginTop: '8px', marginBottom: '20px'}}>
+            Both activate the day you land home{destination ? ` from ${destination}` : ''}. You are not picking a date today. You are agreeing to what happens when the date arrives.
+          </p>
+
+          <div style={commitmentBox}>
+            <div style={commitmentHeader}>
+              <IconClock size={20} color={GOLD} />
+              <div style={commitmentWindowLabel}>Window one · 48 hours</div>
+            </div>
+            <h3 style={{...h3, marginBottom: '8px'}}>Complete the debrief within 48 hours of landing.</h3>
+            <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: '14px'}}>
+              Past that window, the experience starts to flatten into a tidy memory.
+            </p>
+
+            {previous48Commitment && (
+              <div style={previousAnswerHint}>
+                In your debrief template you said: <strong style={{color: TEAL, fontStyle: 'normal'}}>"{previous48Commitment}"</strong>. Confirm or change.
+              </div>
+            )}
+
+            <div>
+              {commitmentOptions48.map(opt => (
+                <button
+                  key={opt.id}
+                  style={optionButton(commitment48 === opt.id)}
+                  onClick={() => setCommitment48(opt.id)}
+                >
+                  <div style={radioCircle(commitment48 === opt.id)}>
+                    {commitment48 === opt.id && <div style={radioDot}></div>}
+                  </div>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={commitmentBox}>
+            <div style={commitmentHeader}>
+              <IconCalendar size={20} color={GOLD} />
+              <div style={commitmentWindowLabel}>Window two · two weeks</div>
+            </div>
+            <h3 style={{...h3, marginBottom: '8px'}}>Shortlist your next destination within two weeks of landing.</h3>
+            <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: '14px'}}>
+              Before the post-trip high fades and the comfortable option starts looking reasonable again.
+            </p>
+
+            <div>
+              {commitmentOptionsTwoWeek.map(opt => (
+                <button
+                  key={opt.id}
+                  style={optionButton(commitmentTwoWeek === opt.id)}
+                  onClick={() => setCommitmentTwoWeek(opt.id)}
+                >
+                  <div style={radioCircle(commitmentTwoWeek === opt.id)}>
+                    {commitmentTwoWeek === opt.id && <div style={radioDot}></div>}
+                  </div>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(!canAdvanceFromCommitments)} onClick={goNext} disabled={!canAdvanceFromCommitments}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '24px'}}>
+            {!canAdvanceFromCommitments && (
+              <p style={{...p, fontSize: '13px', color: '#8B8B8B', marginTop: '8px', marginBottom: 0, textAlign: 'right'}}>
+                Answer both windows to continue.
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (page === 'written') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Module 5 · Lesson 3 · Optional</div>
+          <h1 style={h1}>One line for the day real life pushes back.</h1>
+          <p style={{...p, marginTop: '8px', marginBottom: '20px'}}>
+            Write something you will read when the post-trip high has faded. Or skip and move on.
+          </p>
+
+          {!writtenPath && (
+            <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px'}}>
+              <button style={pathButton(false)} onClick={() => setWrittenPath('blank')}>
+                Just give me the box
+              </button>
+              <button style={pathButton(false)} onClick={() => setWrittenPath('guided')}>
+                Guide me with prompts
+              </button>
+            </div>
+          )}
+
+          {writtenPath === 'blank' && (
+            <div style={{marginBottom: '20px'}}>
+              <textarea
+                style={textareaStyle}
+                value={blankText}
+                onChange={(e) => setBlankText(e.target.value)}
+                placeholder="Write one line you want to read when real life pushes back."
+              />
+              <button
+                onClick={() => setWrittenPath('guided')}
+                style={{
+                  background: 'none', border: 'none', color: TEAL,
+                  fontSize: '13px', cursor: 'pointer', marginTop: '10px',
+                  textDecoration: 'underline', padding: 0, fontFamily: 'inherit',
+                }}
+              >
+                Switch to guided prompts instead
+              </button>
+            </div>
+          )}
+
+          {writtenPath === 'guided' && (
+            <div style={{marginBottom: '20px'}}>
+              <div style={{marginBottom: '20px'}}>
+                <label style={stemLabel}>What I want to remember when real life pushes back is...</label>
+                <textarea
+                  style={textareaStyle}
+                  value={stem1Text}
+                  onChange={(e) => setStem1Text(e.target.value)}
+                  placeholder="Continue the sentence in your own words."
+                />
+              </div>
+              <div style={{marginBottom: '10px'}}>
+                <label style={stemLabel}>The version of me who just came home from this trip would tell me...</label>
+                <textarea
+                  style={textareaStyle}
+                  value={stem2Text}
+                  onChange={(e) => setStem2Text(e.target.value)}
+                  placeholder="Continue the sentence in your own words."
+                />
+              </div>
+              <button
+                onClick={() => setWrittenPath('blank')}
+                style={{
+                  background: 'none', border: 'none', color: TEAL,
+                  fontSize: '13px', cursor: 'pointer', marginTop: '4px',
+                  textDecoration: 'underline', padding: 0, fontFamily: 'inherit',
+                }}
+              >
+                Switch to a blank box instead
+              </button>
+            </div>
+          )}
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(false)} onClick={goNext}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'save') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Save your progress</div>
+          <h1 style={h1}>The plan is built.</h1>
+          <p style={p}>
+            Save your file and continue to Final Words.
+          </p>
+          <p style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: '20px'}}>
+            <strong style={{color: TEAL}}>BoldTraveler_Progress11.json</strong>
+          </p>
+
+          <button style={primaryButton(false)} onClick={handleExport}>
+            <IconDownload />
+            Download my progress
+          </button>
+
+          <hr style={hr} />
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'exported') {
+      return (
+        <React.Fragment>
+          <div style={successCard}>
+            <div style={{display: 'flex', justifyContent: 'center', marginBottom: '12px'}}>
+              <IconSparkle size={32} color={GOLD} />
+            </div>
+            <h2 style={{...h2, color: TEAL, marginBottom: '10px'}}>Eleven sections. Plan complete.</h2>
+            <p style={{...p, marginBottom: 0, fontSize: '14.5px'}}>
+              <strong>BoldTraveler_Progress11.json</strong> saved to your device.
+            </p>
+          </div>
+
+          <div style={card}>
+            <Header />
+            <h2 style={h2}>One last step.</h2>
+            <p style={p}>
+              Bring this file with you to Final Words. It becomes your Bold Traveler Compass.
+            </p>
+            <a href={NEXT_LESSON_URL} target="_blank" rel="noopener noreferrer" style={successButton}>
+              Take me to Final Words
+              <IconArrowRight />
+            </a>
+            <hr style={hr} />
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Go back and review
+            </button>
+            <div style={{minHeight: '32px'}}></div>
+          </div>
+        </React.Fragment>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <React.Fragment>
+      {showRestartConfirm && <RestartModal />}
+      <div style={wrapStyle}>
+        <div style={inner}>
+          {renderPage()}
+        </div>
+      </div>
+    </React.Fragment>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<BoldTravelerCompassM5L3 />);
+</script>
+</body>
+</html>

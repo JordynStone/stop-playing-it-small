@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bold Traveler Compass — The Bold Decision Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #F8F6F0; }
+  body {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #3A3A3A;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const TEAL = '#2C5F5D';
+const GOLD = '#D4A574';
+const CREAM = '#F8F6F0';
+const CORAL = '#E8A87C';
+const CHARCOAL = '#3A3A3A';
+
+const NEXT_LESSON_URL = 'https://www.skool.com/solo-and-fearless-3331/classroom/e6454d3e?md=1394e66ac35f4e428fccc85c4f915943';
+
+const IconCompass = ({ size = 28, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+  </svg>
+);
+
+const IconDownload = ({ size = 20, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+);
+
+const IconUpload = ({ size = 20, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="17 8 12 3 7 8"/>
+    <line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
+);
+
+const IconArrowRight = ({ size = 18, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+    <polyline points="12 5 19 12 12 19"/>
+  </svg>
+);
+
+const IconArrowLeft = ({ size = 18, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+
+const IconSparkle = ({ size = 18, color = GOLD }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
+  </svg>
+);
+
+const IconRefresh = ({ size = 20, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/>
+    <polyline points="1 20 1 14 7 14"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+  </svg>
+);
+
+const IconCheckCircle = ({ size = 22, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+    <polyline points="22 4 12 14.01 9 11.01"/>
+  </svg>
+);
+
+const IconCheck = ({ size = 14, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+
+const IconHelp = ({ size = 16, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
+const IconChevronDown = ({ size = 14, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+
+const IconChevronUp = ({ size = 14, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="18 15 12 9 6 15"/>
+  </svg>
+);
+
+const IconAlert = ({ size = 18, color = CORAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
+const stretchFactors = [
+  { id: 'language', label: 'Language', desc: 'A destination where I do not speak the language' },
+  { id: 'distance', label: 'Distance', desc: 'Further from home than my last trip' },
+  { id: 'culture', label: 'Culture', desc: 'Significantly unfamiliar food, customs, or social expectations' },
+  { id: 'duration', label: 'Duration', desc: 'At least 5 nights, long enough to settle in' },
+  { id: 'independence', label: 'Independence', desc: 'At least half self-navigated, no package tour' },
+];
+
+const stems = [
+  'I am choosing [destination] because...',
+  'The reason this destination is the right next level for me is...',
+  'What makes this both nervous and exciting is...',
+];
+
+const PAGES = ['import', 'continuity', 'destination', 'factors', 'framework', 'written', 'save', 'exported'];
+
+const fearAboutDestinationOptions = [
+  { id: 'same-specific', label: 'It is the same fear, and I can name one concrete thing I could research or prepare for' },
+  { id: 'same-general', label: 'It is the same fear, but I cannot name anything concrete to research or prepare for' },
+  { id: 'different-specific', label: 'Something different is coming up about this destination specifically' },
+  { id: 'unsure', label: 'I am not sure what I am feeling yet' },
+];
+
+const choosingOptions = [
+  { id: 'choosing', label: 'Choosing it (nervous and excited)' },
+  { id: 'settling', label: 'Settling for it (slightly safer than what really lit me up)' },
+];
+
+const lockOptions = [
+  { id: 'yes', label: 'Yes, I can lock it in within 48 hours' },
+  { id: 'no', label: 'No, I am not ready for that yet' },
+  { id: 'unsure', label: 'Not sure' },
+];
+
+function BoldTravelerCompassM2L4() {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [importedData, setImportedData] = useState(null);
+  const [importError, setImportError] = useState(null);
+  const [destination, setDestination] = useState('');
+  const [selectedFactors, setSelectedFactors] = useState([]);
+  const [fearAboutDestination, setFearAboutDestination] = useState(null);
+  const [concretePreparation, setConcretePreparation] = useState('');
+  const [differentFearDescription, setDifferentFearDescription] = useState('');
+  const [choosingOrSettling, setChoosingOrSettling] = useState(null);
+  const [canLock, setCanLock] = useState(null);
+  const [showStems, setShowStems] = useState(false);
+  const [writtenAnswer, setWrittenAnswer] = useState('');
+  const [hasExported, setHasExported] = useState(false);
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const page = PAGES[pageIndex];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pageIndex]);
+
+  const goNext = () => setPageIndex(i => Math.min(i + 1, PAGES.length - 1));
+  const goBack = () => setPageIndex(i => Math.max(i - 1, 0));
+
+  const handleRestart = () => setShowRestartConfirm(true);
+  const cancelRestart = () => setShowRestartConfirm(false);
+  const confirmRestart = () => {
+    setPageIndex(0);
+    setImportedData(null);
+    setImportError(null);
+    setDestination('');
+    setSelectedFactors([]);
+    setFearAboutDestination(null);
+    setConcretePreparation('');
+    setDifferentFearDescription('');
+    setChoosingOrSettling(null);
+    setCanLock(null);
+    setShowStems(false);
+    setWrittenAnswer('');
+    setHasExported(false);
+    setShowRestartConfirm(false);
+  };
+
+  const toggleFactor = (id) => {
+    setSelectedFactors(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleFileImport = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith('.json')) {
+      setImportError('That does not look like a Compass progress file. It should end in .json');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.sections || !data.sections.lastTripLessons) {
+          setImportError('This file is missing your Module 2 Lesson 1 answers. Make sure you are importing the BoldTraveler_Progress3.json file.');
+          return;
+        }
+        setImportedData(data);
+        setImportError(null);
+        goNext();
+      } catch (err) {
+        setImportError('Could not read this file. It may be corrupted. Try downloading it again from Module 2 Lesson 1.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const canAdvanceFromDestination = destination.trim().length > 0;
+  const canAdvanceFromFactors = selectedFactors.length > 0;
+
+  const q2NeedsConcrete = fearAboutDestination === 'same-specific';
+  const q2NeedsDifferent = fearAboutDestination === 'different-specific';
+  const q2Complete =
+    fearAboutDestination !== null &&
+    (!q2NeedsConcrete || concretePreparation.trim().length > 0) &&
+    (!q2NeedsDifferent || differentFearDescription.trim().length > 0);
+
+  const canAdvanceFromFramework =
+    q2Complete && choosingOrSettling !== null && canLock !== null;
+
+  const wrapStyle = {
+    fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif",
+    background: CREAM, color: CHARCOAL,
+    minHeight: '100vh', padding: '80px 32px 120px', lineHeight: 1.6,
+  };
+
+  const inner = { maxWidth: '720px', margin: '0 auto' };
+
+  const card = {
+    background: '#fff', borderRadius: '12px',
+    padding: '36px 32px 60px',
+    boxShadow: '0 2px 16px rgba(44, 95, 93, 0.08)',
+    marginBottom: '20px',
+  };
+
+  const headerBar = {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: '10px', marginBottom: '24px', paddingBottom: '14px',
+    borderBottom: `1px solid ${GOLD}40`,
+  };
+
+  const headerLeft = { display: 'flex', alignItems: 'center', gap: '10px' };
+
+  const headerTitle = {
+    fontSize: '13px', fontWeight: 600, color: TEAL,
+    letterSpacing: '1.2px', textTransform: 'uppercase',
+  };
+
+  const refreshBtn = {
+    background: 'transparent', border: 'none', color: TEAL,
+    cursor: 'pointer', padding: '6px', borderRadius: '6px',
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  };
+
+  const h1 = { fontSize: '26px', fontWeight: 700, color: TEAL, marginBottom: '8px', lineHeight: 1.25 };
+  const h2 = { fontSize: '20px', fontWeight: 600, color: TEAL, marginBottom: '14px', lineHeight: 1.3 };
+  const h3 = { fontSize: '16px', fontWeight: 600, color: TEAL, marginBottom: '10px', lineHeight: 1.3 };
+  const label = { fontSize: '12px', fontWeight: 600, color: GOLD, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '12px', display: 'block' };
+  const p = { fontSize: '15.5px', color: CHARCOAL, marginBottom: '14px', lineHeight: 1.65 };
+  const blockquote = { borderLeft: `3px solid ${GOLD}`, paddingLeft: '16px', fontSize: '15.5px', fontStyle: 'italic', color: CHARCOAL, margin: '16px 0', lineHeight: 1.6 };
+
+  const optionButton = (selected) => ({
+    width: '100%', textAlign: 'left', padding: '16px 18px', marginBottom: '10px',
+    border: `2px solid ${selected ? TEAL : '#E5E0D5'}`,
+    background: selected ? `${TEAL}0D` : '#fff',
+    borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14.5px',
+    color: CHARCOAL, fontWeight: selected ? 600 : 400, transition: 'all 0.15s ease',
+    display: 'flex', alignItems: 'center', gap: '12px',
+  });
+
+  const factorButton = (selected) => ({
+    width: '100%', textAlign: 'left', padding: '14px 18px', marginBottom: '10px',
+    border: `2px solid ${selected ? TEAL : '#E5E0D5'}`,
+    background: selected ? `${TEAL}0D` : '#fff',
+    borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit',
+    color: CHARCOAL, transition: 'all 0.15s ease',
+    display: 'flex', alignItems: 'flex-start', gap: '12px',
+  });
+
+  const radioCircle = (selected) => ({
+    width: '20px', height: '20px', borderRadius: '50%',
+    border: `2px solid ${selected ? TEAL : '#C4BDB0'}`,
+    background: selected ? TEAL : 'transparent', flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    marginTop: '2px',
+  });
+
+  const radioDot = { width: '8px', height: '8px', borderRadius: '50%', background: '#fff' };
+
+  const checkBox = (selected) => ({
+    width: '20px', height: '20px', borderRadius: '4px',
+    border: `2px solid ${selected ? TEAL : '#C4BDB0'}`,
+    background: selected ? TEAL : 'transparent', flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    marginTop: '2px',
+  });
+
+  const textInput = {
+    width: '100%', padding: '14px 16px',
+    border: '2px solid #E5E0D5', borderRadius: '10px',
+    fontFamily: 'inherit', fontSize: '16px', color: CHARCOAL,
+    background: '#FDFCF7', boxSizing: 'border-box',
+    fontWeight: 500,
+  };
+
+  const textareaStyle = {
+    width: '100%', minHeight: '160px', padding: '14px 16px',
+    border: '2px solid #E5E0D5', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', color: CHARCOAL, resize: 'vertical', background: '#FDFCF7',
+    lineHeight: 1.6, boxSizing: 'border-box',
+  };
+
+  const primaryButton = (disabled) => ({
+    background: disabled ? '#C4BDB0' : TEAL, color: '#fff', border: 'none',
+    padding: '14px 24px', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px',
+  });
+
+  const backButton = {
+    background: 'transparent', color: TEAL,
+    border: `2px solid ${TEAL}40`,
+    padding: '14px 24px', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', fontWeight: 600, cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px',
+  };
+
+  const successButton = {
+    background: GOLD, color: '#fff', border: 'none', padding: '14px 24px',
+    borderRadius: '10px', fontFamily: 'inherit', fontSize: '15px', fontWeight: 600,
+    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px', textDecoration: 'none',
+  };
+
+  const textButton = {
+    background: 'transparent', border: 'none', color: TEAL, fontFamily: 'inherit',
+    fontSize: '13.5px', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontWeight: 500,
+  };
+
+  const stemBox = {
+    background: `${CORAL}15`, border: `1px solid ${CORAL}40`,
+    borderRadius: '10px', padding: '16px 18px', marginBottom: '14px',
+    fontSize: '14px', color: CHARCOAL, lineHeight: 1.7,
+  };
+
+  const hr = { border: 'none', borderTop: `1px solid ${GOLD}40`, margin: '24px 0' };
+
+  const navRow = {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    gap: '12px', marginTop: '8px', marginBottom: '32px', flexWrap: 'wrap',
+  };
+
+  const successCard = {
+    background: `${GOLD}15`, border: `2px solid ${GOLD}`,
+    borderRadius: '12px', padding: '28px 24px', marginBottom: '20px', textAlign: 'center',
+  };
+
+  const continuityCard = {
+    background: `${TEAL}08`, border: `1px solid ${TEAL}25`,
+    borderRadius: '10px', padding: '20px 22px',
+    marginTop: '20px', marginBottom: '12px',
+  };
+
+  const fearHighlight = {
+    background: `${GOLD}15`, border: `1px solid ${GOLD}`,
+    borderRadius: '10px', padding: '20px 22px',
+    marginTop: '20px', marginBottom: '12px',
+  };
+
+  const errorBox = {
+    background: `${CORAL}20`, border: `1px solid ${CORAL}`,
+    borderRadius: '8px', padding: '12px 16px',
+    fontSize: '14px', color: CHARCOAL, marginBottom: '16px',
+  };
+
+  const warningBox = {
+    background: `${CORAL}15`, border: `1px solid ${CORAL}60`,
+    borderRadius: '8px', padding: '14px 16px',
+    fontSize: '14px', color: CHARCOAL, marginTop: '12px',
+    display: 'flex', alignItems: 'flex-start', gap: '10px', lineHeight: 1.5,
+  };
+
+  const questionBlock = { marginBottom: '28px' };
+
+  const segmentedControl = {
+    display: 'flex', gap: '8px', flexWrap: 'wrap',
+  };
+
+  const segmentBtn = (selected) => ({
+    flex: '1 1 auto', minWidth: '100px',
+    padding: '12px 16px', borderRadius: '8px',
+    border: `2px solid ${selected ? TEAL : '#E5E0D5'}`,
+    background: selected ? TEAL : '#fff',
+    color: selected ? '#fff' : CHARCOAL,
+    fontFamily: 'inherit', fontSize: '14px',
+    fontWeight: selected ? 600 : 500,
+    cursor: 'pointer', transition: 'all 0.15s ease',
+  });
+
+  const modalOverlay = {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(58, 58, 58, 0.55)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 1000, padding: '24px',
+  };
+
+  const modalCard = {
+    background: '#fff', borderRadius: '12px',
+    padding: '32px 28px', maxWidth: '440px', width: '100%',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+  };
+
+  const Header = () => (
+    <div style={headerBar}>
+      <div style={headerLeft}>
+        <IconCompass size={22} />
+        <div style={headerTitle}>Bold Traveler Compass</div>
+      </div>
+      <button style={refreshBtn} onClick={handleRestart} title="Start over" aria-label="Start over">
+        <IconRefresh size={20} color={TEAL} />
+      </button>
+    </div>
+  );
+
+  const RestartModal = () => (
+    <div style={modalOverlay} onClick={cancelRestart}>
+      <div style={modalCard} onClick={(e) => e.stopPropagation()}>
+        <h2 style={{...h2, marginBottom: '12px'}}>Start over?</h2>
+        <p style={p}>
+          This will clear everything you have filled in on this page and bring you back to the beginning. Anything you have not downloaded yet will be lost.
+        </p>
+        <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: '24px'}}>
+          If you have already downloaded a progress file, you can import it again next time to pick up where you left off.
+        </p>
+        <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', flexWrap: 'wrap'}}>
+          <button style={backButton} onClick={cancelRestart}>Keep my answers</button>
+          <button style={{...primaryButton(false), background: CORAL}} onClick={confirmRestart}>
+            Yes, start over
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const handleExport = () => {
+    const factorLabels = selectedFactors.map(id => stretchFactors.find(f => f.id === id)?.label).filter(Boolean);
+
+    const updatedData = {
+      ...importedData,
+      version: (importedData?.version || 1) + 1,
+      lastCompleted: 'Module 2 Lesson 4 — The Bold Decision Framework',
+      timestamp: new Date().toISOString(),
+      sections: {
+        ...importedData.sections,
+        nextDestination: {
+          destination: destination.trim(),
+          stretchFactors: factorLabels,
+          factorCount: selectedFactors.length,
+          boldDecisionFramework: {
+            stretchesOnTwoOrMoreFactors: selectedFactors.length >= 2,
+            fearAboutDestination: fearAboutDestinationOptions.find(o => o.id === fearAboutDestination)?.label || '',
+            concretePreparation: q2NeedsConcrete ? concretePreparation.trim() : '',
+            differentFearDescription: q2NeedsDifferent ? differentFearDescription.trim() : '',
+            choosingOrSettling: choosingOptions.find(o => o.id === choosingOrSettling)?.label || '',
+            canLockInWithin48h: lockOptions.find(o => o.id === canLock)?.label || '',
+          },
+          writtenExpansion: writtenAnswer.trim(),
+        },
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(updatedData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'BoldTraveler_Progress4.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setHasExported(true);
+    goNext();
+  };
+
+  const renderPage = () => {
+    if (page === 'import') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Welcome back</div>
+          <h1 style={h1}>Bring your Compass with you.</h1>
+          <p style={p}>
+            This is the biggest section of your Compass. The destination. To get here you brought everything from Module 1 and Module 2 Lesson 1.
+          </p>
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B'}}>
+            Look for <strong style={{color: TEAL}}>BoldTraveler_Progress3.json</strong> on your device.
+          </p>
+
+          {importError && <div style={errorBox}>{importError}</div>}
+
+          <div style={{marginTop: '20px', marginBottom: '12px'}}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              onChange={handleFileImport}
+              style={{display: 'none'}}
+            />
+            <button style={primaryButton(false)} onClick={() => fileInputRef.current?.click()}>
+              <IconUpload />
+              Choose my progress file
+            </button>
+          </div>
+
+          <hr style={hr} />
+
+          <div style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: 0}}>
+            <strong style={{color: TEAL}}>Cannot find the file?</strong> No problem. Go back to Module 2 Lesson 1, complete it, and download the file from there. Then come back here.
+          </div>
+          <div style={{minHeight: '24px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'continuity') {
+      const identityChoice = importedData?.sections?.identityShift?.structuredChoice || '';
+      const primaryFear = importedData?.sections?.lastTripLessons?.primarySpecificFear || '';
+
+      return (
+        <div style={card}>
+          <Header />
+          <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px'}}>
+            <IconCheckCircle size={22} color={TEAL} />
+            <div style={{...label, marginBottom: 0, color: TEAL}}>Progress restored</div>
+          </div>
+          <h1 style={h1}>This is the big one.</h1>
+          <p style={p}>
+            Module 2 Lesson 4 is where the destination gets named. Before you choose it, here is what your Compass already knows about where you are.
+          </p>
+
+          <div style={continuityCard}>
+            <div style={{...label, color: TEAL, marginBottom: '8px'}}>The identity you claimed</div>
+            <div style={{fontSize: '15.5px', color: CHARCOAL, fontWeight: 600}}>{identityChoice}</div>
+          </div>
+
+          <div style={fearHighlight}>
+            <div style={{...label, color: TEAL, marginBottom: '8px'}}>The fear running the show</div>
+            <div style={{fontSize: '15.5px', color: CHARCOAL, fontWeight: 600}}>{primaryFear}</div>
+            <p style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginTop: '10px', marginBottom: 0, lineHeight: 1.5}}>
+              The destination you choose next needs to address this fear directly. Not avoid it.
+            </p>
+          </div>
+
+          <p style={{...p, marginTop: '20px'}}>
+            Three steps from here. Name the destination. Confirm the stretch. Run the four-question framework.
+          </p>
+
+          <hr style={hr} />
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(false)} onClick={goNext}>
+              Continue
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'destination') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Module 2 · Lesson 4</div>
+          <h1 style={h1}>Name your next destination.</h1>
+          <p style={{...p, marginTop: '8px'}}>
+            One destination. The one you have been circling. The one that makes you nervous and excited at the same time.
+          </p>
+
+          <hr style={hr} />
+
+          <h2 style={h2}>Where are you going?</h2>
+          <p style={{...p, fontSize: '14.5px', color: '#6B6B6B'}}>
+            Be specific. A city, a region, or a country. Not "somewhere in Asia." Somewhere you could book today.
+          </p>
+
+          <div style={{marginTop: '16px', marginBottom: '24px'}}>
+            <input
+              type="text"
+              style={textInput}
+              placeholder="e.g. Lisbon, Portugal"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              maxLength={100}
+              autoFocus
+            />
+          </div>
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(!canAdvanceFromDestination)} onClick={goNext} disabled={!canAdvanceFromDestination}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}>
+            {!canAdvanceFromDestination && (
+              <p style={{...p, fontSize: '13px', color: '#8B8B8B', marginTop: '12px', marginBottom: 0, textAlign: 'right'}}>
+                Name your destination to continue.
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (page === 'factors') {
+      const showStretchWarning = selectedFactors.length === 1;
+      const showJumpWarning = selectedFactors.length >= 4;
+
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Module 2 · Lesson 4</div>
+          <h1 style={h1}>How does {destination} stretch you?</h1>
+          <p style={{...p, marginTop: '8px'}}>
+            The Stretch Trip Formula has five factors. The target is two to three. That is a real stretch without being a jump.
+          </p>
+
+          <hr style={hr} />
+
+          <h2 style={h2}>Which factors does this destination stretch you on?</h2>
+          <p style={{...p, fontSize: '14.5px', color: '#6B6B6B'}}>
+            Pick the ones that genuinely apply. Be honest. If you pick all five, that is not a stretch, that is a jump.
+          </p>
+
+          <div style={{marginTop: '16px', marginBottom: '8px'}}>
+            {stretchFactors.map(factor => {
+              const selected = selectedFactors.includes(factor.id);
+              return (
+                <button
+                  key={factor.id}
+                  style={factorButton(selected)}
+                  onClick={() => toggleFactor(factor.id)}
+                >
+                  <div style={checkBox(selected)}>
+                    {selected && <IconCheck size={14} color="#fff" />}
+                  </div>
+                  <div style={{flex: 1}}>
+                    <div style={{fontSize: '14.5px', fontWeight: 600, color: CHARCOAL, marginBottom: '4px'}}>
+                      {factor.label}
+                    </div>
+                    <div style={{fontSize: '13.5px', color: '#6B6B6B', lineHeight: 1.5}}>
+                      {factor.desc}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {showStretchWarning && (
+            <div style={warningBox}>
+              <IconAlert size={18} color={CORAL} />
+              <div>
+                <strong style={{color: CHARCOAL}}>Only one factor selected.</strong> The Stretch Trip Formula recommends 2-3 factors for a real stretch. One factor may be too close to your last trip. Consider whether the destination genuinely stretches you on more.
+              </div>
+            </div>
+          )}
+
+          {showJumpWarning && (
+            <div style={warningBox}>
+              <IconAlert size={18} color={CORAL} />
+              <div>
+                <strong style={{color: CHARCOAL}}>{selectedFactors.length} factors selected.</strong> The Stretch Trip Formula recommends 2-3. Four or five may be a jump rather than a stretch and could set you up to feel overwhelmed. Consider whether you have honestly counted the stretch or whether you are stretching the truth.
+              </div>
+            </div>
+          )}
+
+          <div style={{...navRow, marginTop: '24px'}}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(!canAdvanceFromFactors)} onClick={goNext} disabled={!canAdvanceFromFactors}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}>
+            {!canAdvanceFromFactors && (
+              <p style={{...p, fontSize: '13px', color: '#8B8B8B', marginTop: '12px', marginBottom: 0, textAlign: 'right'}}>
+                Pick at least one factor to continue.
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (page === 'framework') {
+      const stretchesEnough = selectedFactors.length >= 2;
+
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Module 2 · Lesson 4</div>
+          <h1 style={h1}>The Bold Decision Framework.</h1>
+          <p style={{...p, marginTop: '8px'}}>
+            Four questions. Answer them honestly. The Compass saves your answers either way. If something fails, you will see it.
+          </p>
+
+          <hr style={hr} />
+
+          {/* Q1 — auto-filled from factors */}
+          <div style={questionBlock}>
+            <h3 style={h3}>Question 1: Does this stretch you on at least two factors?</h3>
+            <div style={{
+              background: stretchesEnough ? `${TEAL}10` : `${CORAL}15`,
+              border: `1px solid ${stretchesEnough ? TEAL : CORAL}40`,
+              borderRadius: '8px',
+              padding: '14px 16px',
+              fontSize: '14px',
+              color: CHARCOAL,
+              lineHeight: 1.5,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '10px',
+            }}>
+              {stretchesEnough ? <IconCheckCircle size={18} color={TEAL} /> : <IconAlert size={18} color={CORAL} />}
+              <div>
+                {stretchesEnough ? (
+                  <span><strong style={{color: TEAL}}>Yes.</strong> You selected {selectedFactors.length} factor{selectedFactors.length > 1 ? 's' : ''} on the previous step. This destination stretches you.</span>
+                ) : (
+                  <span><strong style={{color: CHARCOAL}}>You only selected 1 factor.</strong> The framework recommends pushing one factor further before confirming the destination. You can go back to revise or continue anyway.</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Q2 — anchored to destination and previous fear */}
+          <div style={questionBlock}>
+            <h3 style={h3}>Question 2: What is making you nervous about {destination} specifically?</h3>
+            <p style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: '12px'}}>
+              Earlier you named <strong style={{color: TEAL}}>{importedData?.sections?.lastTripLessons?.primarySpecificFear || 'your specific fear'}</strong> as the fear running your destination decisions. Is that the same fear coming up about {destination}, or is something different?
+            </p>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+              {fearAboutDestinationOptions.map(opt => (
+                <button
+                  key={opt.id}
+                  style={optionButton(fearAboutDestination === opt.id)}
+                  onClick={() => setFearAboutDestination(opt.id)}
+                >
+                  <div style={radioCircle(fearAboutDestination === opt.id)}>
+                    {fearAboutDestination === opt.id && <div style={radioDot}></div>}
+                  </div>
+                  <span style={{lineHeight: 1.5}}>{opt.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {fearAboutDestination === 'same-specific' && (
+              <div style={{marginTop: '14px'}}>
+                <p style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: '8px'}}>
+                  Name the concrete thing you could research or prepare for. <strong style={{color: TEAL}}>If you can name it, the fear really is specific.</strong>
+                </p>
+                <input
+                  type="text"
+                  style={textInput}
+                  placeholder="e.g. How to find a pharmacy and what medication names translate to"
+                  value={concretePreparation}
+                  onChange={(e) => setConcretePreparation(e.target.value)}
+                  maxLength={150}
+                />
+              </div>
+            )}
+
+            {fearAboutDestination === 'different-specific' && (
+              <div style={{marginTop: '14px'}}>
+                <p style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: '8px'}}>
+                  Name the different fear. <strong style={{color: TEAL}}>One specific thing</strong>, not a list. The more specific you can be, the more you can prepare for it.
+                </p>
+                <input
+                  type="text"
+                  style={textInput}
+                  placeholder="e.g. Driving on the opposite side of the road"
+                  value={differentFearDescription}
+                  onChange={(e) => setDifferentFearDescription(e.target.value)}
+                  maxLength={150}
+                />
+              </div>
+            )}
+
+            {fearAboutDestination === 'same-general' && (
+              <div style={warningBox}>
+                <IconAlert size={18} color={CORAL} />
+                <div>
+                  <strong style={{color: CHARCOAL}}>This is general fear, not specific fear.</strong> When you cannot name a concrete thing to research or prepare for, it is the comfort zone resisting the stretch. Name it as that. Then keep going anyway. General fear is not a reason to change the destination.
+                </div>
+              </div>
+            )}
+
+            {fearAboutDestination === 'unsure' && (
+              <div style={warningBox}>
+                <IconAlert size={18} color={CORAL} />
+                <div>
+                  <strong style={{color: CHARCOAL}}>Sit with it for a moment before moving on.</strong> If after a few minutes you still cannot name something concrete, treat it like general fear and keep going. The framework says general fear is not a reason to change the destination.
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Q3 */}
+          <div style={questionBlock}>
+            <h3 style={h3}>Question 3: Are you choosing it or settling for it?</h3>
+            <p style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: '12px'}}>
+              There is a version of this destination that excites you alongside the nerves. And there is a version you picked because it felt slightly safer.
+            </p>
+            <div style={segmentedControl}>
+              {choosingOptions.map(opt => (
+                <button
+                  key={opt.id}
+                  style={segmentBtn(choosingOrSettling === opt.id)}
+                  onClick={() => setChoosingOrSettling(opt.id)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {choosingOrSettling === 'settling' && (
+              <div style={warningBox}>
+                <IconAlert size={18} color={CORAL} />
+                <div>
+                  <strong style={{color: CHARCOAL}}>If you are settling, the framework says go back.</strong> Choose the destination that makes you nervous and excited. Both. Not one or the other. You can revise the destination or continue with this one.
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Q4 */}
+          <div style={questionBlock}>
+            <h3 style={h3}>Question 4: Can you lock it in within 48 hours of deciding?</h3>
+            <p style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: '12px'}}>
+              Commitment closes the door that flexible bookings keep open for the comfort zone to walk back through.
+            </p>
+            <div style={segmentedControl}>
+              {lockOptions.map(opt => (
+                <button
+                  key={opt.id}
+                  style={segmentBtn(canLock === opt.id)}
+                  onClick={() => setCanLock(opt.id)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(!canAdvanceFromFramework)} onClick={goNext} disabled={!canAdvanceFromFramework}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}>
+            {!canAdvanceFromFramework && (
+              <p style={{...p, fontSize: '13px', color: '#8B8B8B', marginTop: '12px', marginBottom: 0, textAlign: 'right'}}>
+                Answer all questions to continue.
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (page === 'written') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>In your own words</div>
+          <h1 style={h1}>Why this destination.</h1>
+          <p style={p}>
+            Write a few sentences about why you are choosing <strong style={{color: TEAL}}>{destination}</strong>. The reason will matter when the trip gets closer and the comfort zone creep starts.
+          </p>
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B'}}>
+            This part is encouraged but not required. Your answers above are already saved.
+          </p>
+
+          <div style={{marginBottom: '14px'}}>
+            <button style={textButton} onClick={() => setShowStems(s => !s)}>
+              <span style={{display: 'inline-flex', alignItems: 'center', gap: '6px'}}>
+                <IconHelp size={14} color={TEAL} />
+                {showStems ? 'Hide examples' : 'Show me some examples'}
+                {showStems ? <IconChevronUp size={12} /> : <IconChevronDown size={12} />}
+              </span>
+            </button>
+          </div>
+
+          {showStems && (
+            <div style={stemBox}>
+              <strong style={{color: TEAL, display: 'block', marginBottom: '8px', fontSize: '13px', letterSpacing: '0.5px'}}>
+                TRY ONE OF THESE OPENERS
+              </strong>
+              {stems.map((s, i) => (
+                <div key={i} style={{marginBottom: i < stems.length - 1 ? '8px' : 0, fontStyle: 'italic'}}>
+                  · {s.replace('[destination]', destination)}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <textarea
+            style={textareaStyle}
+            placeholder="Write here..."
+            value={writtenAnswer}
+            onChange={(e) => setWrittenAnswer(e.target.value)}
+          />
+
+          <hr style={hr} />
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(false)} onClick={goNext}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'save') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Save your progress</div>
+          <h1 style={h1}>The destination is in.</h1>
+          <p style={p}>
+            <strong style={{color: TEAL}}>{destination}</strong> is in your Compass. The factors it stretches you on are in your Compass. The framework answers are in your Compass.
+          </p>
+          <blockquote style={blockquote}>
+            This is the biggest section of the course. From here, Module 3 builds the life around it. The financial system, the trip structure, the trade-off that makes it sustainable.
+          </blockquote>
+
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: '20px'}}>
+            The file will be saved as <strong style={{color: TEAL}}>BoldTraveler_Progress4.json</strong>. This is the file you will import in Module 3 Lesson 1.
+          </p>
+
+          <button style={primaryButton(false)} onClick={handleExport}>
+            <IconDownload />
+            Download my progress
+          </button>
+
+          <hr style={hr} />
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'exported') {
+      return (
+        <React.Fragment>
+          <div style={successCard}>
+            <div style={{display: 'flex', justifyContent: 'center', marginBottom: '12px'}}>
+              <IconSparkle size={32} color={GOLD} />
+            </div>
+            <h2 style={{...h2, color: TEAL, marginBottom: '10px'}}>Four sections down.</h2>
+            <p style={{...p, marginBottom: '6px'}}>
+              <strong>BoldTraveler_Progress4.json</strong> has been saved to your device.
+            </p>
+            <p style={{...p, fontSize: '14.5px', marginBottom: 0}}>
+              Your Compass now holds the destination, the factors, and the framework. From here it stops being theory and starts being a plan.
+            </p>
+          </div>
+
+          <div style={card}>
+            <Header />
+            <h2 style={h2}>Continue to Module 3</h2>
+            <p style={p}>
+              The next Compass moment is <em>Module 3 Lesson 1: From Occasional to Regular</em>. It is where you set up the structure of your travel year, with <strong style={{color: TEAL}}>{destination}</strong> already in it.
+            </p>
+            <a href={NEXT_LESSON_URL} target="_blank" rel="noopener noreferrer" style={successButton}>
+              Take me to Module 3 Lesson 1
+              <IconArrowRight />
+            </a>
+            <hr style={hr} />
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Go back and review my answers
+            </button>
+            <div style={{minHeight: '32px'}}></div>
+          </div>
+        </React.Fragment>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <React.Fragment>
+      {showRestartConfirm && <RestartModal />}
+      <div style={wrapStyle}>
+        <div style={inner}>
+          {renderPage()}
+        </div>
+      </div>
+    </React.Fragment>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<BoldTravelerCompassM2L4 />);
+</script>
+</body>
+</html>

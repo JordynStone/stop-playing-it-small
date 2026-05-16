@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bold Traveler Compass — The Financial System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #F8F6F0; }
+  body {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #3A3A3A;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const TEAL = '#2C5F5D';
+const GOLD = '#D4A574';
+const CREAM = '#F8F6F0';
+const CORAL = '#E8A87C';
+const CHARCOAL = '#3A3A3A';
+
+const NEXT_LESSON_URL = 'https://www.skool.com/solo-and-fearless-3331/classroom/e6454d3e?md=7af471b2f64142dcbf341f4146876925';
+
+const IconCompass = ({ size = 28, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+  </svg>
+);
+
+const IconDownload = ({ size = 20, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+);
+
+const IconUpload = ({ size = 20, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="17 8 12 3 7 8"/>
+    <line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
+);
+
+const IconArrowRight = ({ size = 18, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+    <polyline points="12 5 19 12 12 19"/>
+  </svg>
+);
+
+const IconArrowLeft = ({ size = 18, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+
+const IconSparkle = ({ size = 18, color = GOLD }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
+  </svg>
+);
+
+const IconRefresh = ({ size = 20, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/>
+    <polyline points="1 20 1 14 7 14"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+  </svg>
+);
+
+const IconCheckCircle = ({ size = 22, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+    <polyline points="22 4 12 14.01 9 11.01"/>
+  </svg>
+);
+
+const IconMapPin = ({ size = 16, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+    <circle cx="12" cy="10" r="3"/>
+  </svg>
+);
+
+const currencies = [
+  { code: 'EUR', symbol: '€', label: 'Euro' },
+  { code: 'USD', symbol: '$', label: 'US Dollar' },
+  { code: 'GBP', symbol: '£', label: 'British Pound' },
+  { code: 'CAD', symbol: 'C$', label: 'Canadian Dollar' },
+  { code: 'AUD', symbol: 'A$', label: 'Australian Dollar' },
+  { code: 'OTHER', symbol: '', label: 'Other' },
+];
+
+const PAGES = ['import', 'continuity', 'currency', 'amounts', 'save', 'exported'];
+
+function BoldTravelerCompassM3L2() {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [importedData, setImportedData] = useState(null);
+  const [importError, setImportError] = useState(null);
+  const [currencyCode, setCurrencyCode] = useState(null);
+  const [customSymbol, setCustomSymbol] = useState('');
+  const [targetAmount, setTargetAmount] = useState('');
+  const [monthlyAmount, setMonthlyAmount] = useState('');
+  const [currentSavings, setCurrentSavings] = useState('');
+  const [hasExported, setHasExported] = useState(false);
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const page = PAGES[pageIndex];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pageIndex]);
+
+  const goNext = () => setPageIndex(i => Math.min(i + 1, PAGES.length - 1));
+  const goBack = () => setPageIndex(i => Math.max(i - 1, 0));
+
+  const handleRestart = () => setShowRestartConfirm(true);
+  const cancelRestart = () => setShowRestartConfirm(false);
+  const confirmRestart = () => {
+    setPageIndex(0);
+    setImportedData(null);
+    setImportError(null);
+    setCurrencyCode(null);
+    setCustomSymbol('');
+    setTargetAmount('');
+    setMonthlyAmount('');
+    setCurrentSavings('');
+    setHasExported(false);
+    setShowRestartConfirm(false);
+  };
+
+  const handleFileImport = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith('.json')) {
+      setImportError('That does not look like a Compass progress file. It should end in .json');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.sections || !data.sections.travelYearStructure) {
+          setImportError('This file is missing your travel year from Module 3 Lesson 1. Make sure you are importing the BoldTraveler_Progress5.json file.');
+          return;
+        }
+        setImportedData(data);
+        setImportError(null);
+        goNext();
+      } catch (err) {
+        setImportError('Could not read this file. It may be corrupted. Try downloading it again from Module 3 Lesson 1.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const destination = importedData?.sections?.nextDestination?.destination || '';
+  const mainTrip = importedData?.sections?.travelYearStructure?.trips?.find(t => t.isMainDestination);
+  const mainQuarter = mainTrip?.quarter || '';
+
+  const selectedCurrency = currencies.find(c => c.code === currencyCode);
+  const currencySymbol = currencyCode === 'OTHER'
+    ? customSymbol.trim()
+    : (selectedCurrency?.symbol || '');
+
+  const parseNum = (str) => {
+    const cleaned = str.replace(/[^\d.]/g, '');
+    const n = parseFloat(cleaned);
+    return isNaN(n) ? 0 : n;
+  };
+
+  const target = parseNum(targetAmount);
+  const monthly = parseNum(monthlyAmount);
+  const savings = parseNum(currentSavings);
+
+  const remaining = Math.max(0, target - savings);
+  const monthsToBooking = monthly > 0 ? remaining / monthly : null;
+  const monthsRounded = monthsToBooking !== null ? Math.ceil(monthsToBooking) : null;
+
+  const getTargetDate = () => {
+    if (monthsRounded === null || remaining === 0) return null;
+    const date = new Date();
+    date.setMonth(date.getMonth() + monthsRounded);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const targetDate = getTargetDate();
+
+  const formatAmount = (n) => {
+    if (n === 0) return '0';
+    return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  };
+
+  const canAdvanceFromCurrency =
+    currencyCode !== null &&
+    (currencyCode !== 'OTHER' || customSymbol.trim().length > 0);
+
+  const canAdvanceFromAmounts = target > 0 && monthly > 0;
+
+  const wrapStyle = {
+    fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif",
+    background: CREAM, color: CHARCOAL,
+    minHeight: '100vh', padding: '80px 32px 120px', lineHeight: 1.6,
+  };
+
+  const inner = { maxWidth: '720px', margin: '0 auto' };
+
+  const card = {
+    background: '#fff', borderRadius: '12px',
+    padding: '36px 32px 60px',
+    boxShadow: '0 2px 16px rgba(44, 95, 93, 0.08)',
+    marginBottom: '20px',
+  };
+
+  const headerBar = {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: '10px', marginBottom: '24px', paddingBottom: '14px',
+    borderBottom: `1px solid ${GOLD}40`,
+  };
+
+  const headerLeft = { display: 'flex', alignItems: 'center', gap: '10px' };
+
+  const headerTitle = {
+    fontSize: '13px', fontWeight: 600, color: TEAL,
+    letterSpacing: '1.2px', textTransform: 'uppercase',
+  };
+
+  const refreshBtn = {
+    background: 'transparent', border: 'none', color: TEAL,
+    cursor: 'pointer', padding: '6px', borderRadius: '6px',
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  };
+
+  const h1 = { fontSize: '26px', fontWeight: 700, color: TEAL, marginBottom: '8px', lineHeight: 1.25 };
+  const h2 = { fontSize: '20px', fontWeight: 600, color: TEAL, marginBottom: '14px', lineHeight: 1.3 };
+  const label = { fontSize: '12px', fontWeight: 600, color: GOLD, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '12px', display: 'block' };
+  const p = { fontSize: '15.5px', color: CHARCOAL, marginBottom: '14px', lineHeight: 1.65 };
+  const blockquote = { borderLeft: `3px solid ${GOLD}`, paddingLeft: '16px', fontSize: '15.5px', fontStyle: 'italic', color: CHARCOAL, margin: '16px 0', lineHeight: 1.6 };
+
+  const optionButton = (selected) => ({
+    width: '100%', textAlign: 'left', padding: '14px 16px', marginBottom: '8px',
+    border: `2px solid ${selected ? TEAL : '#E5E0D5'}`,
+    background: selected ? `${TEAL}0D` : '#fff',
+    borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14.5px',
+    color: CHARCOAL, fontWeight: selected ? 600 : 400, transition: 'all 0.15s ease',
+    display: 'flex', alignItems: 'center', gap: '12px',
+  });
+
+  const radioCircle = (selected) => ({
+    width: '20px', height: '20px', borderRadius: '50%',
+    border: `2px solid ${selected ? TEAL : '#C4BDB0'}`,
+    background: selected ? TEAL : 'transparent', flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  });
+
+  const radioDot = { width: '8px', height: '8px', borderRadius: '50%', background: '#fff' };
+
+  const textInput = {
+    width: '100%', padding: '14px 16px',
+    border: '2px solid #E5E0D5', borderRadius: '10px',
+    fontFamily: 'inherit', fontSize: '16px', color: CHARCOAL,
+    background: '#FDFCF7', boxSizing: 'border-box',
+    fontWeight: 500,
+  };
+
+  const numberInputWrap = { position: 'relative', width: '100%' };
+
+  const numberInput = {
+    width: '100%', padding: '14px 16px 14px 48px',
+    border: '2px solid #E5E0D5', borderRadius: '10px',
+    fontFamily: 'inherit', fontSize: '17px', color: CHARCOAL,
+    background: '#FDFCF7', boxSizing: 'border-box',
+    fontWeight: 600,
+  };
+
+  const currencyPrefix = {
+    position: 'absolute', left: '16px', top: '50%',
+    transform: 'translateY(-50%)',
+    fontSize: '17px', fontWeight: 700, color: TEAL,
+    pointerEvents: 'none',
+  };
+
+  const primaryButton = (disabled) => ({
+    background: disabled ? '#C4BDB0' : TEAL, color: '#fff', border: 'none',
+    padding: '14px 24px', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px',
+  });
+
+  const backButton = {
+    background: 'transparent', color: TEAL,
+    border: `2px solid ${TEAL}40`,
+    padding: '14px 24px', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', fontWeight: 600, cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px',
+  };
+
+  const successButton = {
+    background: GOLD, color: '#fff', border: 'none', padding: '14px 24px',
+    borderRadius: '10px', fontFamily: 'inherit', fontSize: '15px', fontWeight: 600,
+    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px', textDecoration: 'none',
+  };
+
+  const hr = { border: 'none', borderTop: `1px solid ${GOLD}40`, margin: '24px 0' };
+
+  const navRow = {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    gap: '12px', marginTop: '8px', marginBottom: '32px', flexWrap: 'wrap',
+  };
+
+  const successCard = {
+    background: `${GOLD}15`, border: `2px solid ${GOLD}`,
+    borderRadius: '12px', padding: '28px 24px', marginBottom: '20px', textAlign: 'center',
+  };
+
+  const destinationHighlight = {
+    background: `${GOLD}15`, border: `1px solid ${GOLD}`,
+    borderRadius: '10px', padding: '20px 22px',
+    marginTop: '20px', marginBottom: '12px',
+  };
+
+  const errorBox = {
+    background: `${CORAL}20`, border: `1px solid ${CORAL}`,
+    borderRadius: '8px', padding: '12px 16px',
+    fontSize: '14px', color: CHARCOAL, marginBottom: '16px',
+  };
+
+  const fieldBlock = { marginBottom: '22px' };
+
+  const fieldLabel = {
+    fontSize: '14.5px', fontWeight: 600, color: CHARCOAL,
+    marginBottom: '4px', display: 'block',
+  };
+
+  const fieldHint = {
+    fontSize: '13px', color: '#6B6B6B',
+    marginBottom: '10px', lineHeight: 1.5,
+  };
+
+  const calcCard = {
+    background: `linear-gradient(135deg, ${TEAL}08 0%, ${GOLD}12 100%)`,
+    border: `2px solid ${GOLD}`,
+    borderRadius: '12px', padding: '28px 24px',
+    marginTop: '24px', marginBottom: '8px', textAlign: 'center',
+  };
+
+  const calcCardEmpty = {
+    background: '#F8F6F0',
+    border: `1px dashed ${GOLD}80`,
+    borderRadius: '12px', padding: '28px 24px',
+    marginTop: '24px', marginBottom: '8px', textAlign: 'center',
+  };
+
+  const modalOverlay = {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(58, 58, 58, 0.55)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 1000, padding: '24px',
+  };
+
+  const modalCard = {
+    background: '#fff', borderRadius: '12px',
+    padding: '32px 28px', maxWidth: '440px', width: '100%',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+  };
+
+  const Header = () => (
+    <div style={headerBar}>
+      <div style={headerLeft}>
+        <IconCompass size={22} />
+        <div style={headerTitle}>Bold Traveler Compass</div>
+      </div>
+      <button style={refreshBtn} onClick={handleRestart} title="Start over" aria-label="Start over">
+        <IconRefresh size={20} color={TEAL} />
+      </button>
+    </div>
+  );
+
+  const RestartModal = () => (
+    <div style={modalOverlay} onClick={cancelRestart}>
+      <div style={modalCard} onClick={(e) => e.stopPropagation()}>
+        <h2 style={{...h2, marginBottom: '12px'}}>Start over?</h2>
+        <p style={p}>
+          This will clear everything you have filled in on this page and bring you back to the beginning. Anything you have not downloaded yet will be lost.
+        </p>
+        <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: '24px'}}>
+          If you have already downloaded a progress file, you can import it again next time to pick up where you left off.
+        </p>
+        <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', flexWrap: 'wrap'}}>
+          <button style={backButton} onClick={cancelRestart}>Keep my answers</button>
+          <button style={{...primaryButton(false), background: CORAL}} onClick={confirmRestart}>
+            Yes, start over
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const handleExport = () => {
+    const updatedData = {
+      ...importedData,
+      version: (importedData?.version || 1) + 1,
+      lastCompleted: 'Module 3 Lesson 2 — The Financial System for the Solo Traveler',
+      timestamp: new Date().toISOString(),
+      sections: {
+        ...importedData.sections,
+        financialSystem: {
+          currency: currencyCode === 'OTHER' ? customSymbol.trim() : currencyCode,
+          currencySymbol: currencySymbol,
+          targetAmount: target,
+          monthlyAmount: monthly,
+          currentSavings: savings,
+          remainingToTarget: remaining,
+          monthsToBooking: monthsRounded,
+          targetDate: targetDate,
+          isReadyToBook: remaining === 0,
+        },
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(updatedData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'BoldTraveler_Progress6.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setHasExported(true);
+    goNext();
+  };
+
+  const renderCalcCard = () => {
+    if (target === 0 || monthly === 0) {
+      return (
+        <div style={calcCardEmpty}>
+          <div style={{...label, color: GOLD, marginBottom: '8px'}}>Your countdown</div>
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: 0}}>
+            Fill in your target and monthly amount above to see how many months until {destination || 'your trip'}.
+          </p>
+        </div>
+      );
+    }
+
+    if (remaining === 0) {
+      return (
+        <div style={calcCard}>
+          <div style={{...label, color: TEAL, marginBottom: '12px'}}>Your countdown</div>
+          <div style={{fontSize: '26px', fontWeight: 700, color: TEAL, lineHeight: 1.2, marginBottom: '10px'}}>
+            You are ready to book {destination || 'your trip'} today.
+          </div>
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: 0}}>
+            You have already saved {currencySymbol}{formatAmount(savings)}, which meets or exceeds your target of {currencySymbol}{formatAmount(target)}. The number is hit. Book it.
+          </p>
+        </div>
+      );
+    }
+
+    if (monthsToBooking !== null && monthsToBooking < 1) {
+      return (
+        <div style={calcCard}>
+          <div style={{...label, color: TEAL, marginBottom: '12px'}}>Your countdown</div>
+          <div style={{fontSize: '26px', fontWeight: 700, color: TEAL, lineHeight: 1.2, marginBottom: '10px'}}>
+            Less than a month away from booking {destination || 'your trip'}.
+          </div>
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: 0}}>
+            You need {currencySymbol}{formatAmount(remaining)} more at {currencySymbol}{formatAmount(monthly)} per month. Target hit by <strong style={{color: TEAL}}>{targetDate}</strong>.
+          </p>
+        </div>
+      );
+    }
+
+    const monthLabel = monthsRounded === 1 ? 'month' : 'months';
+    return (
+      <div style={calcCard}>
+        <div style={{...label, color: TEAL, marginBottom: '12px'}}>Your countdown</div>
+        <div style={{fontSize: '26px', fontWeight: 700, color: TEAL, lineHeight: 1.25, marginBottom: '10px'}}>
+          You are <span style={{color: GOLD}}>{monthsRounded} {monthLabel}</span> away from booking {destination || 'your trip'}.
+        </div>
+        <p style={{...p, fontSize: '14.5px', color: CHARCOAL, marginBottom: '6px'}}>
+          Target hit by <strong style={{color: TEAL}}>{targetDate}</strong>
+        </p>
+        <p style={{...p, fontSize: '13px', color: '#6B6B6B', marginBottom: 0, lineHeight: 1.5}}>
+          {currencySymbol}{formatAmount(remaining)} to go · {currencySymbol}{formatAmount(monthly)}/month
+        </p>
+      </div>
+    );
+  };
+
+  const renderPage = () => {
+    if (page === 'import') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Welcome back</div>
+          <h1 style={h1}>Bring your Compass with you.</h1>
+          <p style={p}>
+            In Lesson 1 you placed your destination in your year. Now you build the system that gets you there.
+          </p>
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B'}}>
+            Look for <strong style={{color: TEAL}}>BoldTraveler_Progress5.json</strong> on your device.
+          </p>
+
+          {importError && <div style={errorBox}>{importError}</div>}
+
+          <div style={{marginTop: '20px', marginBottom: '12px'}}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              onChange={handleFileImport}
+              style={{display: 'none'}}
+            />
+            <button style={primaryButton(false)} onClick={() => fileInputRef.current?.click()}>
+              <IconUpload />
+              Choose my progress file
+            </button>
+          </div>
+
+          <hr style={hr} />
+
+          <div style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: 0}}>
+            <strong style={{color: TEAL}}>Cannot find the file?</strong> No problem. Go back to Module 3 Lesson 1, complete it, and download the file from there. Then come back here.
+          </div>
+          <div style={{minHeight: '24px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'continuity') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px'}}>
+            <IconCheckCircle size={22} color={TEAL} />
+            <div style={{...label, marginBottom: 0, color: TEAL}}>Progress restored</div>
+          </div>
+          <h1 style={h1}>Stop hoping. Start counting.</h1>
+          <p style={p}>
+            Money is not the real reason most women are not traveling more. But it is a real obstacle when there is no system behind it. This is where you build the system.
+          </p>
+
+          <div style={destinationHighlight}>
+            <div style={{...label, color: TEAL, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px'}}>
+              <IconMapPin size={14} color={TEAL} />
+              The trip we are funding
+            </div>
+            <div style={{fontSize: '18px', color: CHARCOAL, fontWeight: 700, lineHeight: 1.3}}>
+              {destination}{mainQuarter ? ` · ${mainQuarter}` : ''}
+            </div>
+          </div>
+
+          <p style={{...p, marginTop: '20px'}}>
+            Three numbers. Your target. Your monthly amount. Anything you have already saved. The Compass does the math live so you can see exactly when your target gets hit.
+          </p>
+
+          <hr style={hr} />
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(false)} onClick={goNext}>
+              Continue
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'currency') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Module 3 · Lesson 2</div>
+          <h1 style={h1}>Which currency are you saving in?</h1>
+          <p style={{...p, marginTop: '8px'}}>
+            Pick the currency that matches your travel fund account. The Compass will use it across all the math.
+          </p>
+
+          <hr style={hr} />
+
+          <div style={{marginTop: '16px', marginBottom: '24px'}}>
+            {currencies.map(c => (
+              <button
+                key={c.code}
+                style={optionButton(currencyCode === c.code)}
+                onClick={() => setCurrencyCode(c.code)}
+              >
+                <div style={radioCircle(currencyCode === c.code)}>
+                  {currencyCode === c.code && <div style={radioDot}></div>}
+                </div>
+                <div style={{flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px'}}>
+                  <span>{c.label}</span>
+                  {c.symbol && (
+                    <span style={{fontWeight: 700, color: TEAL, fontSize: '16px'}}>{c.symbol}</span>
+                  )}
+                </div>
+              </button>
+            ))}
+
+            {currencyCode === 'OTHER' && (
+              <div style={{marginTop: '14px'}}>
+                <p style={{...fieldHint, marginBottom: '6px'}}>Type the symbol you want to use (e.g. ¥, ₹, R$, kr)</p>
+                <input
+                  type="text"
+                  style={{...textInput, fontSize: '17px', fontWeight: 700, color: TEAL, textAlign: 'center'}}
+                  placeholder="¥"
+                  value={customSymbol}
+                  onChange={(e) => setCustomSymbol(e.target.value.slice(0, 4))}
+                  maxLength={4}
+                />
+              </div>
+            )}
+          </div>
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(!canAdvanceFromCurrency)} onClick={goNext} disabled={!canAdvanceFromCurrency}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}>
+            {!canAdvanceFromCurrency && (
+              <p style={{...p, fontSize: '13px', color: '#8B8B8B', marginTop: '12px', marginBottom: 0, textAlign: 'right'}}>
+                {currencyCode === 'OTHER' ? 'Enter your currency symbol to continue.' : 'Pick a currency to continue.'}
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (page === 'amounts') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Module 3 · Lesson 2</div>
+          <h1 style={h1}>The three numbers.</h1>
+          <p style={{...p, marginTop: '8px'}}>
+            Enter what you know. The countdown updates as you type. You will see {destination} get closer with every number.
+          </p>
+
+          <hr style={hr} />
+
+          <div style={fieldBlock}>
+            <label style={fieldLabel}>Cost target for {destination}</label>
+            <p style={fieldHint}>
+              Your honest estimate for flights, accommodation, food, transport, and a buffer. Not aspirational. Realistic.
+            </p>
+            <div style={numberInputWrap}>
+              <span style={currencyPrefix}>{currencySymbol}</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                style={numberInput}
+                placeholder="0"
+                value={targetAmount}
+                onChange={(e) => setTargetAmount(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div style={fieldBlock}>
+            <label style={fieldLabel}>Monthly amount into the travel fund</label>
+            <p style={fieldHint}>
+              A fixed amount you can commit to every month. Treat it like a bill to yourself.
+            </p>
+            <div style={numberInputWrap}>
+              <span style={currencyPrefix}>{currencySymbol}</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                style={numberInput}
+                placeholder="0"
+                value={monthlyAmount}
+                onChange={(e) => setMonthlyAmount(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div style={fieldBlock}>
+            <label style={fieldLabel}>What you have already saved <span style={{fontWeight: 500, color: '#8B8B8B', fontSize: '13px'}}>(optional)</span></label>
+            <p style={fieldHint}>
+              If you already have some money set aside for this trip, add it here. Leave it blank or zero if not.
+            </p>
+            <div style={numberInputWrap}>
+              <span style={currencyPrefix}>{currencySymbol}</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                style={numberInput}
+                placeholder="0"
+                value={currentSavings}
+                onChange={(e) => setCurrentSavings(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {renderCalcCard()}
+
+          <div style={{...navRow, marginTop: '24px'}}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(!canAdvanceFromAmounts)} onClick={goNext} disabled={!canAdvanceFromAmounts}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}>
+            {!canAdvanceFromAmounts && (
+              <p style={{...p, fontSize: '13px', color: '#8B8B8B', marginTop: '12px', marginBottom: 0, textAlign: 'right'}}>
+                Fill in your target and monthly amount to continue.
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (page === 'save') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Save your progress</div>
+          <h1 style={h1}>The countdown is locked in.</h1>
+          <p style={p}>
+            You stopped hoping and started counting. {destination} now has a target, a monthly amount, and a date when it gets booked.
+          </p>
+          <blockquote style={blockquote}>
+            One of those is a wall. The other is a countdown. You just turned the wall into a countdown.
+          </blockquote>
+
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: '20px'}}>
+            The file will be saved as <strong style={{color: TEAL}}>BoldTraveler_Progress6.json</strong>. This is the file you will import in Lesson 3.
+          </p>
+
+          <button style={primaryButton(false)} onClick={handleExport}>
+            <IconDownload />
+            Download my progress
+          </button>
+
+          <hr style={hr} />
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'exported') {
+      return (
+        <React.Fragment>
+          <div style={successCard}>
+            <div style={{display: 'flex', justifyContent: 'center', marginBottom: '12px'}}>
+              <IconSparkle size={32} color={GOLD} />
+            </div>
+            <h2 style={{...h2, color: TEAL, marginBottom: '10px'}}>Six sections down.</h2>
+            <p style={{...p, marginBottom: '6px'}}>
+              <strong>BoldTraveler_Progress6.json</strong> has been saved to your device.
+            </p>
+            <p style={{...p, fontSize: '14.5px', marginBottom: 0}}>
+              Your Compass now holds the destination, the year structure, and the financial system that gets you there.
+            </p>
+          </div>
+
+          <div style={card}>
+            <Header />
+            <h2 style={h2}>Continue to Lesson 3</h2>
+            <p style={p}>
+              The next Compass moment is <em>Saying No to One Thing</em>. It is where you find the one trade-off that makes everything you just built actually sustainable.
+            </p>
+            <a href={NEXT_LESSON_URL} target="_blank" rel="noopener noreferrer" style={successButton}>
+              Take me to Lesson 3
+              <IconArrowRight />
+            </a>
+            <hr style={hr} />
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Go back and review my answers
+            </button>
+            <div style={{minHeight: '32px'}}></div>
+          </div>
+        </React.Fragment>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <React.Fragment>
+      {showRestartConfirm && <RestartModal />}
+      <div style={wrapStyle}>
+        <div style={inner}>
+          {renderPage()}
+        </div>
+      </div>
+    </React.Fragment>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<BoldTravelerCompassM3L2 />);
+</script>
+</body>
+</html>

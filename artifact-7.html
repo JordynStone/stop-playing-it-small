@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bold Traveler Compass — Saying No to One Thing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #F8F6F0; }
+  body {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #3A3A3A;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const TEAL = '#2C5F5D';
+const GOLD = '#D4A574';
+const CREAM = '#F8F6F0';
+const CORAL = '#E8A87C';
+const CHARCOAL = '#3A3A3A';
+
+const NEXT_LESSON_URL = 'https://www.skool.com/solo-and-fearless-3331/classroom/e6454d3e?md=98111f0db3bc405388569fd425b8261b';
+
+const IconCompass = ({ size = 28, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+  </svg>
+);
+
+const IconDownload = ({ size = 20, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+);
+
+const IconUpload = ({ size = 20, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="17 8 12 3 7 8"/>
+    <line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
+);
+
+const IconArrowRight = ({ size = 18, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+    <polyline points="12 5 19 12 12 19"/>
+  </svg>
+);
+
+const IconArrowLeft = ({ size = 18, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+
+const IconSparkle = ({ size = 18, color = GOLD }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
+  </svg>
+);
+
+const IconRefresh = ({ size = 20, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/>
+    <polyline points="1 20 1 14 7 14"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+  </svg>
+);
+
+const IconCheckCircle = ({ size = 22, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+    <polyline points="22 4 12 14.01 9 11.01"/>
+  </svg>
+);
+
+const IconHelp = ({ size = 16, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
+const IconChevronDown = ({ size = 14, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+
+const IconChevronUp = ({ size = 14, color = TEAL }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="18 15 12 9 6 15"/>
+  </svg>
+);
+
+const tradeoffCategories = [
+  { id: 'subscription', label: 'A subscription I do not really use', desc: 'Streaming, apps, gym memberships, anything paid for and barely used' },
+  { id: 'group_commitment', label: 'A group commitment that costs me more than it gives', desc: 'A group trip, a recurring obligation, a yes I keep saying to keep the peace' },
+  { id: 'weekend_trip', label: 'A weekend or short trip I would not really miss', desc: 'A weekend away that uses leave days you would rather spend differently' },
+  { id: 'leave_days', label: 'Leave days currently spent on something else', desc: 'Time off that belongs somewhere else in your life' },
+  { id: 'spending_habit', label: 'A spending habit that does not add up to much', desc: 'The small, automatic spending that adds up over a year' },
+  { id: 'other', label: 'Something else', desc: 'A trade-off that does not fit the categories above' },
+];
+
+const stems = [
+  'The one thing I am saying no to is...',
+  'To make room for this travel year, I am letting go of...',
+  'What I am trading in for this trip is...',
+];
+
+const PAGES = ['import', 'continuity', 'category', 'written', 'save', 'exported'];
+
+function BoldTravelerCompassM3L3() {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [importedData, setImportedData] = useState(null);
+  const [importError, setImportError] = useState(null);
+  const [categoryChoice, setCategoryChoice] = useState(null);
+  const [showStems, setShowStems] = useState(false);
+  const [writtenAnswer, setWrittenAnswer] = useState('');
+  const [hasExported, setHasExported] = useState(false);
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const page = PAGES[pageIndex];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pageIndex]);
+
+  const goNext = () => setPageIndex(i => Math.min(i + 1, PAGES.length - 1));
+  const goBack = () => setPageIndex(i => Math.max(i - 1, 0));
+
+  const handleRestart = () => setShowRestartConfirm(true);
+  const cancelRestart = () => setShowRestartConfirm(false);
+  const confirmRestart = () => {
+    setPageIndex(0);
+    setImportedData(null);
+    setImportError(null);
+    setCategoryChoice(null);
+    setShowStems(false);
+    setWrittenAnswer('');
+    setHasExported(false);
+    setShowRestartConfirm(false);
+  };
+
+  const handleFileImport = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith('.json')) {
+      setImportError('That does not look like a Compass progress file. It should end in .json');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.sections || !data.sections.financialSystem) {
+          setImportError('This file is missing your financial system from Lesson 2. Make sure you are importing the BoldTraveler_Progress6.json file.');
+          return;
+        }
+        setImportedData(data);
+        setImportError(null);
+        goNext();
+      } catch (err) {
+        setImportError('Could not read this file. It may be corrupted. Try downloading it again from Lesson 2.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const destination = importedData?.sections?.nextDestination?.destination || '';
+  const monthsToBooking = importedData?.sections?.financialSystem?.monthsToBooking;
+  const isReadyToBook = importedData?.sections?.financialSystem?.isReadyToBook;
+  const targetDate = importedData?.sections?.financialSystem?.targetDate;
+
+  const canAdvanceFromCategory = categoryChoice !== null;
+  const canAdvanceFromWritten = writtenAnswer.trim().length > 0;
+
+  const wrapStyle = {
+    fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif",
+    background: CREAM, color: CHARCOAL,
+    minHeight: '100vh', padding: '80px 32px 120px', lineHeight: 1.6,
+  };
+
+  const inner = { maxWidth: '720px', margin: '0 auto' };
+
+  const card = {
+    background: '#fff', borderRadius: '12px',
+    padding: '36px 32px 60px',
+    boxShadow: '0 2px 16px rgba(44, 95, 93, 0.08)',
+    marginBottom: '20px',
+  };
+
+  const headerBar = {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: '10px', marginBottom: '24px', paddingBottom: '14px',
+    borderBottom: `1px solid ${GOLD}40`,
+  };
+
+  const headerLeft = { display: 'flex', alignItems: 'center', gap: '10px' };
+
+  const headerTitle = {
+    fontSize: '13px', fontWeight: 600, color: TEAL,
+    letterSpacing: '1.2px', textTransform: 'uppercase',
+  };
+
+  const refreshBtn = {
+    background: 'transparent', border: 'none', color: TEAL,
+    cursor: 'pointer', padding: '6px', borderRadius: '6px',
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  };
+
+  const h1 = { fontSize: '26px', fontWeight: 700, color: TEAL, marginBottom: '8px', lineHeight: 1.25 };
+  const h2 = { fontSize: '20px', fontWeight: 600, color: TEAL, marginBottom: '14px', lineHeight: 1.3 };
+  const label = { fontSize: '12px', fontWeight: 600, color: GOLD, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '12px', display: 'block' };
+  const p = { fontSize: '15.5px', color: CHARCOAL, marginBottom: '14px', lineHeight: 1.65 };
+  const blockquote = { borderLeft: `3px solid ${GOLD}`, paddingLeft: '16px', fontSize: '15.5px', fontStyle: 'italic', color: CHARCOAL, margin: '16px 0', lineHeight: 1.6 };
+
+  const optionButton = (selected) => ({
+    width: '100%', textAlign: 'left', padding: '14px 18px', marginBottom: '10px',
+    border: `2px solid ${selected ? TEAL : '#E5E0D5'}`,
+    background: selected ? `${TEAL}0D` : '#fff',
+    borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit',
+    color: CHARCOAL, transition: 'all 0.15s ease',
+    display: 'flex', alignItems: 'flex-start', gap: '12px',
+  });
+
+  const radioCircle = (selected) => ({
+    width: '20px', height: '20px', borderRadius: '50%',
+    border: `2px solid ${selected ? TEAL : '#C4BDB0'}`,
+    background: selected ? TEAL : 'transparent', flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    marginTop: '2px',
+  });
+
+  const radioDot = { width: '8px', height: '8px', borderRadius: '50%', background: '#fff' };
+
+  const textareaStyle = {
+    width: '100%', minHeight: '120px', padding: '14px 16px',
+    border: '2px solid #E5E0D5', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', color: CHARCOAL, resize: 'vertical', background: '#FDFCF7',
+    lineHeight: 1.6, boxSizing: 'border-box',
+  };
+
+  const primaryButton = (disabled) => ({
+    background: disabled ? '#C4BDB0' : TEAL, color: '#fff', border: 'none',
+    padding: '14px 24px', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px',
+  });
+
+  const backButton = {
+    background: 'transparent', color: TEAL,
+    border: `2px solid ${TEAL}40`,
+    padding: '14px 24px', borderRadius: '10px', fontFamily: 'inherit',
+    fontSize: '15px', fontWeight: 600, cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px',
+  };
+
+  const successButton = {
+    background: GOLD, color: '#fff', border: 'none', padding: '14px 24px',
+    borderRadius: '10px', fontFamily: 'inherit', fontSize: '15px', fontWeight: 600,
+    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.15s ease', letterSpacing: '0.3px', textDecoration: 'none',
+  };
+
+  const textButton = {
+    background: 'transparent', border: 'none', color: TEAL, fontFamily: 'inherit',
+    fontSize: '13.5px', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontWeight: 500,
+  };
+
+  const stemBox = {
+    background: `${CORAL}15`, border: `1px solid ${CORAL}40`,
+    borderRadius: '10px', padding: '16px 18px', marginBottom: '14px',
+    fontSize: '14px', color: CHARCOAL, lineHeight: 1.7,
+  };
+
+  const hr = { border: 'none', borderTop: `1px solid ${GOLD}40`, margin: '24px 0' };
+
+  const navRow = {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    gap: '12px', marginTop: '8px', marginBottom: '32px', flexWrap: 'wrap',
+  };
+
+  const successCard = {
+    background: `${GOLD}15`, border: `2px solid ${GOLD}`,
+    borderRadius: '12px', padding: '28px 24px', marginBottom: '20px', textAlign: 'center',
+  };
+
+  const continuityCard = {
+    background: `${TEAL}08`, border: `1px solid ${TEAL}25`,
+    borderRadius: '10px', padding: '20px 22px',
+    marginTop: '20px', marginBottom: '12px',
+  };
+
+  const noteBox = {
+    background: `${GOLD}10`, border: `1px solid ${GOLD}60`,
+    borderRadius: '10px', padding: '16px 18px',
+    fontSize: '13.5px', color: CHARCOAL, marginTop: '16px',
+    lineHeight: 1.55,
+  };
+
+  const errorBox = {
+    background: `${CORAL}20`, border: `1px solid ${CORAL}`,
+    borderRadius: '8px', padding: '12px 16px',
+    fontSize: '14px', color: CHARCOAL, marginBottom: '16px',
+  };
+
+  const modalOverlay = {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(58, 58, 58, 0.55)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 1000, padding: '24px',
+  };
+
+  const modalCard = {
+    background: '#fff', borderRadius: '12px',
+    padding: '32px 28px', maxWidth: '440px', width: '100%',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+  };
+
+  const Header = () => (
+    <div style={headerBar}>
+      <div style={headerLeft}>
+        <IconCompass size={22} />
+        <div style={headerTitle}>Bold Traveler Compass</div>
+      </div>
+      <button style={refreshBtn} onClick={handleRestart} title="Start over" aria-label="Start over">
+        <IconRefresh size={20} color={TEAL} />
+      </button>
+    </div>
+  );
+
+  const RestartModal = () => (
+    <div style={modalOverlay} onClick={cancelRestart}>
+      <div style={modalCard} onClick={(e) => e.stopPropagation()}>
+        <h2 style={{...h2, marginBottom: '12px'}}>Start over?</h2>
+        <p style={p}>
+          This will clear everything you have filled in on this page and bring you back to the beginning. Anything you have not downloaded yet will be lost.
+        </p>
+        <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: '24px'}}>
+          If you have already downloaded a progress file, you can import it again next time to pick up where you left off.
+        </p>
+        <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', flexWrap: 'wrap'}}>
+          <button style={backButton} onClick={cancelRestart}>Keep my answers</button>
+          <button style={{...primaryButton(false), background: CORAL}} onClick={confirmRestart}>
+            Yes, start over
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const handleExport = () => {
+    const categoryLabel = tradeoffCategories.find(c => c.id === categoryChoice)?.label || '';
+
+    const updatedData = {
+      ...importedData,
+      version: (importedData?.version || 1) + 1,
+      lastCompleted: 'Module 3 Lesson 3 — Saying No to One Thing',
+      timestamp: new Date().toISOString(),
+      sections: {
+        ...importedData.sections,
+        oneTradeoff: {
+          category: categoryLabel,
+          specificTradeoff: writtenAnswer.trim(),
+        },
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(updatedData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'BoldTraveler_Progress7.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setHasExported(true);
+    goNext();
+  };
+
+  const renderPage = () => {
+    if (page === 'import') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Welcome back</div>
+          <h1 style={h1}>Bring your Compass with you.</h1>
+          <p style={p}>
+            In Lesson 2 you built the financial system. Now you find the one trade-off that makes everything you have set up actually sustainable.
+          </p>
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B'}}>
+            Look for <strong style={{color: TEAL}}>BoldTraveler_Progress6.json</strong> on your device.
+          </p>
+
+          {importError && <div style={errorBox}>{importError}</div>}
+
+          <div style={{marginTop: '20px', marginBottom: '12px'}}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              onChange={handleFileImport}
+              style={{display: 'none'}}
+            />
+            <button style={primaryButton(false)} onClick={() => fileInputRef.current?.click()}>
+              <IconUpload />
+              Choose my progress file
+            </button>
+          </div>
+
+          <hr style={hr} />
+
+          <div style={{...p, fontSize: '13.5px', color: '#6B6B6B', marginBottom: 0}}>
+            <strong style={{color: TEAL}}>Cannot find the file?</strong> No problem. Go back to Module 3 Lesson 2, complete it, and download the file from there. Then come back here.
+          </div>
+          <div style={{minHeight: '24px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'continuity') {
+      let countdownLine = '';
+      if (isReadyToBook) {
+        countdownLine = `You are ready to book ${destination} today.`;
+      } else if (monthsToBooking === 1) {
+        countdownLine = `You are 1 month away from booking ${destination}${targetDate ? ` · target hit by ${targetDate}` : ''}.`;
+      } else if (monthsToBooking) {
+        countdownLine = `You are ${monthsToBooking} months away from booking ${destination}${targetDate ? ` · target hit by ${targetDate}` : ''}.`;
+      }
+
+      return (
+        <div style={card}>
+          <Header />
+          <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px'}}>
+            <IconCheckCircle size={22} color={TEAL} />
+            <div style={{...label, marginBottom: 0, color: TEAL}}>Progress restored</div>
+          </div>
+          <h1 style={h1}>One quiet no makes room for the yes.</h1>
+          <p style={p}>
+            You named the destination, placed it in your year, and built the financial system. The countdown is real. But none of it works if there is no space in your life for it. This lesson is about finding that space.
+          </p>
+
+          {countdownLine && (
+            <div style={continuityCard}>
+              <div style={{...label, color: TEAL, marginBottom: '8px'}}>Where you are in the countdown</div>
+              <div style={{fontSize: '15px', color: CHARCOAL, fontWeight: 600, lineHeight: 1.5}}>
+                {countdownLine}
+              </div>
+            </div>
+          )}
+
+          <p style={{...p, marginTop: '20px'}}>
+            One thing in your current life is holding the space your trips need. Not five things. Not a life overhaul. One quiet, deliberate no.
+          </p>
+
+          <hr style={hr} />
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(false)} onClick={goNext}>
+              Continue
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'category') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Module 3 · Lesson 3</div>
+          <h1 style={h1}>What kind of trade-off?</h1>
+          <p style={{...p, marginTop: '8px'}}>
+            The no does not have to be financial. Sometimes it is a yes to something that costs you time, energy, or leave days that belong somewhere else.
+          </p>
+
+          <hr style={hr} />
+
+          <h2 style={h2}>Which of these is closest to your one no?</h2>
+          <p style={{...p, fontSize: '14.5px', color: '#6B6B6B'}}>
+            Pick the category that feels most honest. You will get specific on the next page.
+          </p>
+
+          <div style={{marginTop: '16px', marginBottom: '24px'}}>
+            {tradeoffCategories.map(opt => (
+              <button
+                key={opt.id}
+                style={optionButton(categoryChoice === opt.id)}
+                onClick={() => setCategoryChoice(opt.id)}
+              >
+                <div style={radioCircle(categoryChoice === opt.id)}>
+                  {categoryChoice === opt.id && <div style={radioDot}></div>}
+                </div>
+                <div style={{flex: 1}}>
+                  <div style={{fontSize: '14.5px', fontWeight: 600, color: CHARCOAL, marginBottom: '4px'}}>
+                    {opt.label}
+                  </div>
+                  <div style={{fontSize: '13.5px', color: '#6B6B6B', lineHeight: 1.5}}>
+                    {opt.desc}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(!canAdvanceFromCategory)} onClick={goNext} disabled={!canAdvanceFromCategory}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}>
+            {!canAdvanceFromCategory && (
+              <p style={{...p, fontSize: '13px', color: '#8B8B8B', marginTop: '12px', marginBottom: 0, textAlign: 'right'}}>
+                Pick one to continue.
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (page === 'written') {
+      const selectedCategory = tradeoffCategories.find(c => c.id === categoryChoice);
+
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>In your own words</div>
+          <h1 style={h1}>Name it specifically.</h1>
+          <p style={p}>
+            You picked <strong style={{color: TEAL}}>{selectedCategory?.label.toLowerCase()}</strong>. Now name the specific one. One sentence is enough. The clearer you can be, the easier it is to actually do.
+          </p>
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B'}}>
+            This part is required. The specificity is what makes the trade-off real.
+          </p>
+
+          <div style={{marginBottom: '14px'}}>
+            <button style={textButton} onClick={() => setShowStems(s => !s)}>
+              <span style={{display: 'inline-flex', alignItems: 'center', gap: '6px'}}>
+                <IconHelp size={14} color={TEAL} />
+                {showStems ? 'Hide examples' : 'Show me some examples'}
+                {showStems ? <IconChevronUp size={12} /> : <IconChevronDown size={12} />}
+              </span>
+            </button>
+          </div>
+
+          {showStems && (
+            <div style={stemBox}>
+              <strong style={{color: TEAL, display: 'block', marginBottom: '8px', fontSize: '13px', letterSpacing: '0.5px'}}>
+                TRY ONE OF THESE OPENERS
+              </strong>
+              {stems.map((s, i) => (
+                <div key={i} style={{marginBottom: i < stems.length - 1 ? '8px' : 0, fontStyle: 'italic'}}>
+                  · {s}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <textarea
+            style={textareaStyle}
+            placeholder="Write here..."
+            value={writtenAnswer}
+            onChange={(e) => setWrittenAnswer(e.target.value)}
+            maxLength={300}
+          />
+
+          <div style={noteBox}>
+            <strong style={{color: TEAL}}>A reminder.</strong> Not dramatically. Not with guilt. Just honestly. One no to make room for the yes that matters more.
+          </div>
+
+          <hr style={hr} />
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+            <button style={primaryButton(!canAdvanceFromWritten)} onClick={goNext} disabled={!canAdvanceFromWritten}>
+              Next
+              <IconArrowRight />
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}>
+            {!canAdvanceFromWritten && (
+              <p style={{...p, fontSize: '13px', color: '#8B8B8B', marginTop: '12px', marginBottom: 0, textAlign: 'right'}}>
+                Write your one no to continue.
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (page === 'save') {
+      return (
+        <div style={card}>
+          <Header />
+          <div style={label}>Save your progress</div>
+          <h1 style={h1}>Module 3 is complete.</h1>
+          <p style={p}>
+            You set up the structure of your travel year. You built the financial system. You named the one trade-off that makes it sustainable. The shape of a travel life is now in your Compass.
+          </p>
+          <blockquote style={blockquote}>
+            One no to make room for the yes that matters more. That is all this was.
+          </blockquote>
+
+          <p style={{...p, fontSize: '14px', color: '#6B6B6B', marginBottom: '20px'}}>
+            The file will be saved as <strong style={{color: TEAL}}>BoldTraveler_Progress7.json</strong>. This is the file you will import in Module 4 Lesson 2.
+          </p>
+
+          <button style={primaryButton(false)} onClick={handleExport}>
+            <IconDownload />
+            Download my progress
+          </button>
+
+          <hr style={hr} />
+
+          <div style={navRow}>
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Back
+            </button>
+          </div>
+          <div style={{minHeight: '48px'}}></div>
+        </div>
+      );
+    }
+
+    if (page === 'exported') {
+      return (
+        <React.Fragment>
+          <div style={successCard}>
+            <div style={{display: 'flex', justifyContent: 'center', marginBottom: '12px'}}>
+              <IconSparkle size={32} color={GOLD} />
+            </div>
+            <h2 style={{...h2, color: TEAL, marginBottom: '10px'}}>Seven sections down. Module 3 complete.</h2>
+            <p style={{...p, marginBottom: '6px'}}>
+              <strong>BoldTraveler_Progress7.json</strong> has been saved to your device.
+            </p>
+            <p style={{...p, fontSize: '14.5px', marginBottom: 0}}>
+              Your Compass now holds the destination, the year structure, the financial system, and the trade-off that keeps it sustainable. From here, Module 4 is about how you actually move through unfamiliar territory.
+            </p>
+          </div>
+
+          <div style={card}>
+            <Header />
+            <h2 style={h2}>Continue to Module 4</h2>
+            <p style={p}>
+              The next lesson is <em>The Language Principle</em>. It does not have a Compass moment, but you still need to read it before the next Compass capture in <strong style={{color: TEAL}}>Module 4 Lesson 2: Beyond the Tourist Bubble</strong>.
+            </p>
+            <a href={NEXT_LESSON_URL} target="_blank" rel="noopener noreferrer" style={successButton}>
+              Take me to Module 4 Lesson 1
+              <IconArrowRight />
+            </a>
+            <hr style={hr} />
+            <button style={backButton} onClick={goBack}>
+              <IconArrowLeft />
+              Go back and review my answers
+            </button>
+            <div style={{minHeight: '32px'}}></div>
+          </div>
+        </React.Fragment>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <React.Fragment>
+      {showRestartConfirm && <RestartModal />}
+      <div style={wrapStyle}>
+        <div style={inner}>
+          {renderPage()}
+        </div>
+      </div>
+    </React.Fragment>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<BoldTravelerCompassM3L3 />);
+</script>
+</body>
+</html>

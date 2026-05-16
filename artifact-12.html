@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Fearless Bold Traveler Compass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #F8F6F0;
+    color: #3A3A3A;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+  button { font-family: inherit; }
+  textarea:focus, input:focus { border-color: #2C5F5D !important; }
+  button:active { transform: translateY(1px); }
+  #root { padding: 0 16px; }
+
+  @media print {
+    @page {
+      size: A4;
+      margin: 12mm 10mm;
+    }
+    @page :first {
+      margin: 0;
+    }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #F8F6F0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    #root { padding: 0 !important; }
+    .no-print { display: none !important; }
+    .print-area {
+      padding: 0 !important;
+      background: #F8F6F0 !important;
+      margin: 0 !important;
+    }
+    .compass-doc {
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+    }
+    .print-cover {
+      page-break-after: always;
+      break-after: page;
+      width: 210mm !important;
+      height: 297mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .print-chapter {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .print-chapter-newpage {
+      page-break-before: always;
+      break-before: page;
+    }
+    .print-debrief-question {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .print-footer {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+// === BRAND PALETTE ===
+const TEAL = '#2C5F5D';
+const TEAL_DARK = '#1e4442';
+const GOLD = '#D4A574';
+const GOLD_DARK = '#b8884a';
+const CREAM = '#F8F6F0';
+const CORAL = '#E8A87C';
+const CHARCOAL = '#3A3A3A';
+const TEXT_SOFT = '#6B6B6B';
+const TEXT_MUTED = '#999999';
+const BORDER_SOFT = '#E5E0D5';
+
+// === COVER TEXT ===
+const COVER_BRAND = 'Solo & Fearless';
+const COVER_TITLE_LINE_1 = 'The Fearless';
+const COVER_TITLE_LINE_2 = 'Bold Traveler Compass';
+const COVER_COURSE_LABEL = 'Stop Playing It Small';
+const COVER_BELONGS_LABEL = 'Belonging to';
+
+const NEXT_LESSON_URL = 'https://www.skool.com/solo-and-fearless-3331/classroom/e6454d3e';
+
+// === ICONS ===
+const Icon = ({ size = 16, children, style }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={style}>{children}</svg>
+);
+const IconCompass = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></Icon>;
+const IconUpload = (p) => <Icon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></Icon>;
+const IconArrowRight = (p) => <Icon {...p}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></Icon>;
+const IconArrowLeft = (p) => <Icon {...p}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></Icon>;
+const IconPrinter = (p) => <Icon {...p}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></Icon>;
+
+// === HELPERS ===
+function formatDate(dateStr) {
+  if (!dateStr) return null;
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch { return dateStr; }
+}
+
+function safeText(v) {
+  if (v === null || v === undefined) return null;
+  const t = String(v).trim();
+  return t || null;
+}
+
+function pickLabel(obj) {
+  if (!obj) return null;
+  if (typeof obj === 'string') return obj;
+  if (obj.label) return obj.label;
+  if (obj.choice) return obj.choice;
+  return null;
+}
+
+// === SHARED UI STYLES (CHROME) ===
+const wrap = { padding: '32px 0', maxWidth: 560, margin: '0 auto' };
+const card = {
+  background: '#fff', borderRadius: 12,
+  padding: '36px 32px 40px',
+  boxShadow: '0 2px 16px rgba(44, 95, 93, 0.08)',
+  marginBottom: 20,
+};
+const headerBar = {
+  display: 'flex', alignItems: 'center', gap: 10,
+  marginBottom: 24, paddingBottom: 14,
+  borderBottom: `1px solid ${GOLD}40`,
+};
+const headerTitle = {
+  fontSize: 13, fontWeight: 600, color: TEAL,
+  letterSpacing: '1.2px', textTransform: 'uppercase',
+};
+const labelStyle = {
+  fontSize: 12, fontWeight: 600, color: GOLD,
+  letterSpacing: '1.5px', textTransform: 'uppercase',
+  marginBottom: 12, display: 'block',
+};
+const h1 = { fontSize: 26, fontWeight: 700, color: TEAL, marginBottom: 8, lineHeight: 1.25 };
+const p = { fontSize: 15.5, color: CHARCOAL, marginBottom: 14, lineHeight: 1.65 };
+const inputStyle = {
+  width: '100%', padding: '14px 16px',
+  border: `2px solid ${BORDER_SOFT}`, borderRadius: 10,
+  fontSize: 15, color: CHARCOAL, fontFamily: 'inherit',
+  outline: 'none', background: '#FDFCF7',
+};
+const primaryButton = (disabled) => ({
+  background: disabled ? '#C4BDB0' : TEAL, color: '#fff', border: 'none',
+  padding: '14px 24px', borderRadius: 10, fontFamily: 'inherit',
+  fontSize: 15, fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
+  display: 'inline-flex', alignItems: 'center', gap: 10,
+  letterSpacing: '0.3px',
+  width: '100%', justifyContent: 'center',
+});
+const backButton = {
+  background: 'transparent', color: TEAL,
+  border: `2px solid ${TEAL}40`,
+  padding: '10px 18px', borderRadius: 10, fontFamily: 'inherit',
+  fontSize: 13, fontWeight: 600, cursor: 'pointer',
+  display: 'inline-flex', alignItems: 'center', gap: 8,
+};
+const goldButton = {
+  background: GOLD, color: '#fff', border: 'none',
+  padding: '14px 24px', borderRadius: 10, fontFamily: 'inherit',
+  fontSize: 15, fontWeight: 600, cursor: 'pointer',
+  display: 'inline-flex', alignItems: 'center', gap: 10,
+  letterSpacing: '0.3px', width: '100%', justifyContent: 'center',
+};
+const errBox = {
+  background: `${CORAL}20`, border: `1px solid ${CORAL}`,
+  borderRadius: 8, padding: '12px 14px',
+  fontSize: 13.5, color: CHARCOAL, marginTop: 10, lineHeight: 1.6,
+};
+const Header = () => (
+  <div style={headerBar}>
+    <IconCompass size={22} style={{ color: TEAL }} />
+    <div style={headerTitle}>Bold Traveler Compass</div>
+  </div>
+);
+
+// === DOCUMENT BUILDING BLOCKS ===
+const ChapterNum = ({ n }) => (
+  <div style={{
+    fontSize: 13, fontWeight: 700,
+    letterSpacing: '4px', color: GOLD_DARK, marginBottom: 6,
+  }}>{n}</div>
+);
+
+const ChapterTitle = ({ children }) => (
+  <h2 style={{
+    fontSize: 26, fontWeight: 700, color: TEAL,
+    margin: '0 0 22px', lineHeight: 1.15, letterSpacing: '-0.3px',
+  }}>{children}</h2>
+);
+
+const FieldLabel = ({ children }) => (
+  <div style={{
+    fontSize: 10, fontWeight: 700,
+    letterSpacing: '2.5px', textTransform: 'uppercase',
+    color: GOLD_DARK, marginBottom: 8,
+  }}>{children}</div>
+);
+
+const Field = ({ label, value, join = ' · ' }) => {
+  if (value === null || value === undefined || value === '') return null;
+  if (Array.isArray(value) && value.length === 0) return null;
+  const display = Array.isArray(value) ? value.join(join) : value;
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <FieldLabel>{label}</FieldLabel>
+      <div style={{ fontSize: 17, lineHeight: 1.65, color: CHARCOAL, fontWeight: 500 }}>
+        {display}
+      </div>
+    </div>
+  );
+};
+
+const GoldRule = ({ width = 60 }) => (
+  <div style={{ width, height: 3, background: GOLD, margin: '0 auto' }} />
+);
+
+// Renders written content. Handles BOTH string form and {path, blankBox, stems} object form.
+const WrittenText = ({ value, stemLabels = {} }) => {
+  if (!value) return null;
+
+  // String form (most sections use this)
+  if (typeof value === 'string') {
+    const text = value.trim();
+    if (!text) return null;
+    return (
+      <div style={{ fontSize: 17, lineHeight: 1.7, color: CHARCOAL, fontWeight: 500, fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>
+        {text}
+      </div>
+    );
+  }
+
+  // Object form (reEntryPlan.writtenReflection uses this)
+  const blank = safeText(value.blankBox);
+  const stems = value.stems || {};
+  const filledStems = Object.entries(stems).filter(([k, v]) => safeText(v));
+
+  if (value.path === 'blank' && blank) {
+    return (
+      <div style={{ fontSize: 17, lineHeight: 1.7, color: CHARCOAL, fontWeight: 500, fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>
+        {blank}
+      </div>
+    );
+  }
+  if (filledStems.length > 0) {
+    return (
+      <div>
+        {filledStems.map(([k, v], i) => (
+          <div key={k} style={{ marginTop: i === 0 ? 0 : 18 }}>
+            {stemLabels[k] && (
+              <div style={{ fontSize: 11, color: GOLD_DARK, fontStyle: 'italic', fontWeight: 600, letterSpacing: '0.5px', marginBottom: 5 }}>
+                {stemLabels[k]}
+              </div>
+            )}
+            <div style={{ fontSize: 17, lineHeight: 1.7, color: CHARCOAL, fontWeight: 500, fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>
+              {v.trim()}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (blank) {
+    return (
+      <div style={{ fontSize: 17, lineHeight: 1.7, color: CHARCOAL, fontWeight: 500, fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>
+        {blank}
+      </div>
+    );
+  }
+  return null;
+};
+
+// Fillable writing lines (for the debrief)
+const WritingLines = ({ count = 4, height = 26 }) => (
+  <div style={{ marginTop: 6 }}>
+    {Array.from({ length: count }).map((_, i) => (
+      <div key={i} style={{
+        borderBottom: `1px solid ${BORDER_SOFT}`,
+        height: height,
+      }} />
+    ))}
+  </div>
+);
+
+// Bulleted list (for arrays of full sentences)
+const BulletList = ({ items }) => (
+  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+    {items.map((item, i) => (
+      <li key={i} style={{
+        fontSize: 16, color: CHARCOAL, fontWeight: 500, lineHeight: 1.6,
+        padding: '10px 0',
+        borderBottom: i < items.length - 1 ? `1px solid ${BORDER_SOFT}80` : 'none',
+        display: 'flex', gap: 12, alignItems: 'flex-start',
+      }}>
+        <span style={{
+          flexShrink: 0, marginTop: 10,
+          width: 5, height: 5, background: GOLD, borderRadius: '50%',
+        }} />
+        <span>{item}</span>
+      </li>
+    ))}
+  </ul>
+);
+
+// === THE COMPASS DOCUMENT (the printed keepsake) ===
+function CompassDoc({ data }) {
+  const { firstName, completedDate } = data;
+  const s = data.sections || {};
+
+  // Pull every section
+  const identity = s.identityShift || {};
+  const cost = s.costOfStayingSmall || {};
+  const lastTrip = s.lastTripLessons || {};
+  const dest = s.nextDestination || {};
+  const year = s.travelYearStructure || {};
+  const finance = s.financialSystem || {};
+  const tradeoff = s.oneTradeoff || {};
+  const tourist = s.tourBubbleCommitments || {};
+  const duration = s.tripDuration || {};
+  const debrief = s.debriefTemplate || {};
+  const reEntry = s.reEntryPlan || {};
+
+  // Identity
+  const identityChoice = safeText(identity.structuredChoice);
+  const identityWritten = safeText(identity.writtenExpansion);
+
+  // Cost of staying small
+  const costChoice = safeText(cost.structuredChoice);
+  const costWritten = safeText(cost.writtenExpansion);
+
+  // Last trip lessons
+  const lessonsLearned = Array.isArray(lastTrip.lessonsLearned) ? lastTrip.lessonsLearned.filter(Boolean) : [];
+  const primaryFear = safeText(lastTrip.primarySpecificFear);
+
+  // Next destination
+  const destination = safeText(dest.destination);
+  const stretchFactors = Array.isArray(dest.stretchFactors) ? dest.stretchFactors.filter(Boolean) : [];
+  const destWritten = safeText(dest.writtenExpansion);
+  const choosingOrSettling = safeText(dest.boldDecisionFramework?.choosingOrSettling);
+
+  // Travel year
+  const tripCount = year.tripCount;
+  const trips = Array.isArray(year.trips) ? year.trips.filter(t => t) : [];
+
+  // Financial
+  const symbol = finance.currencySymbol ||
+    (finance.currency === 'EUR' ? '€' :
+     finance.currency === 'GBP' ? '£' :
+     finance.currency === 'USD' ? '$' : '');
+  const fmtMoney = (amount) => {
+    if (amount === null || amount === undefined) return null;
+    return `${symbol}${Number(amount).toLocaleString()}`;
+  };
+  const targetAmount = finance.targetAmount;
+  const monthlyAmount = finance.monthlyAmount;
+  const currentSavings = finance.currentSavings;
+  const remainingToTarget = finance.remainingToTarget;
+  const targetDate = safeText(finance.targetDate);
+  let monthsToBooking = finance.monthsToBooking;
+  if (!monthsToBooking && targetAmount && monthlyAmount && currentSavings !== undefined) {
+    const remaining = remainingToTarget !== undefined ? remainingToTarget : (targetAmount - currentSavings);
+    monthsToBooking = Math.ceil(Number(remaining) / Number(monthlyAmount));
+  }
+
+  // One tradeoff
+  const tradeoffCategory = safeText(tradeoff.category);
+  const tradeoffSpecific = safeText(tradeoff.specificTradeoff);
+
+  // Tourist bubble
+  const touristActions = Array.isArray(tourist.commitments) ? tourist.commitments.filter(Boolean) : [];
+
+  // Duration
+  const durationChoice = safeText(duration.duration);
+  const accommodation = safeText(duration.accommodation);
+
+  // Debrief
+  const debrief48 = safeText(debrief.fortyEightHourCommitment);
+  const debriefQuestions = Array.isArray(debrief.questions) ? debrief.questions.filter(Boolean) : [];
+
+  // Re-entry
+  const reEntry48 = pickLabel(reEntry.fortyEightHourDebrief);
+  const reEntryTwoWeek = pickLabel(reEntry.twoWeekShortlist);
+  const reEntryWritten = reEntry.writtenReflection;
+
+  return (
+    <div className="compass-doc" style={{
+      background: CREAM,
+      maxWidth: 720,
+      margin: '0 auto',
+      color: CHARCOAL,
+      borderRadius: 8,
+      boxShadow: '0 4px 24px rgba(44, 95, 93, 0.12)',
+      overflow: 'hidden',
+    }}>
+
+      {/* ============ COVER ============ */}
+      <div className="print-cover" style={{
+        background: TEAL,
+        padding: '80px 48px',
+        textAlign: 'center',
+        position: 'relative',
+        minHeight: 700,
+      }}>
+        <div style={{ position: 'absolute', top: 24, left: 24, width: 36, height: 36, borderTop: `2px solid ${GOLD}`, borderLeft: `2px solid ${GOLD}` }} />
+        <div style={{ position: 'absolute', top: 24, right: 24, width: 36, height: 36, borderTop: `2px solid ${GOLD}`, borderRight: `2px solid ${GOLD}` }} />
+        <div style={{ position: 'absolute', bottom: 24, left: 24, width: 36, height: 36, borderBottom: `2px solid ${GOLD}`, borderLeft: `2px solid ${GOLD}` }} />
+        <div style={{ position: 'absolute', bottom: 24, right: 24, width: 36, height: 36, borderBottom: `2px solid ${GOLD}`, borderRight: `2px solid ${GOLD}` }} />
+
+        <div style={{
+          fontSize: 11, fontWeight: 700,
+          letterSpacing: '5px', textTransform: 'uppercase',
+          color: GOLD, marginBottom: 32,
+        }}>{COVER_BRAND}</div>
+
+        <div style={{ width: 50, height: 3, background: GOLD, margin: '0 auto 32px' }} />
+
+        <h1 style={{
+          fontSize: 38, fontWeight: 700, color: CREAM,
+          margin: '0 0 16px', lineHeight: 1.1, letterSpacing: '-0.8px',
+        }}>
+          {COVER_TITLE_LINE_1}<br />{COVER_TITLE_LINE_2}
+        </h1>
+
+        <div style={{
+          fontSize: 14, color: GOLD,
+          letterSpacing: '2px', textTransform: 'uppercase',
+          fontWeight: 500, marginBottom: 48,
+        }}>{COVER_COURSE_LABEL}</div>
+
+        <div style={{
+          display: 'inline-block',
+          padding: '16px 40px',
+          background: 'rgba(212, 165, 116, 0.15)',
+          border: `1px solid ${GOLD}`, borderRadius: 4,
+        }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700,
+            letterSpacing: '3px', textTransform: 'uppercase',
+            color: GOLD, marginBottom: 8,
+          }}>{COVER_BELONGS_LABEL}</div>
+          <div style={{
+            fontSize: 26, fontWeight: 700, color: CREAM, letterSpacing: '1px',
+          }}>{firstName}</div>
+        </div>
+
+        <div style={{
+          position: 'absolute', bottom: 56, left: 0, right: 0,
+          fontSize: 10, color: GOLD,
+          letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 500,
+        }}>
+          Completed {formatDate(completedDate)}
+        </div>
+      </div>
+
+      {/* ============ EPIGRAPH ============ */}
+      {identityChoice && (
+        <div style={{
+          background: CREAM,
+          padding: '44px 48px',
+          textAlign: 'center',
+          borderBottom: `1px solid ${BORDER_SOFT}`,
+        }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700,
+            letterSpacing: '3px', textTransform: 'uppercase',
+            color: GOLD_DARK, marginBottom: 18,
+          }}>The identity she is claiming</div>
+          <div style={{
+            fontSize: 22, lineHeight: 1.5, color: CHARCOAL,
+            fontWeight: 500, fontStyle: 'italic',
+            maxWidth: 520, margin: '0 auto',
+          }}>
+            "{identityChoice}."
+          </div>
+        </div>
+      )}
+
+      {/* ============ BODY CHAPTERS ============ */}
+      <div style={{ padding: '48px' }}>
+
+        {/* 01 — Who I am */}
+        {(identityChoice || identityWritten) && (
+          <div className="print-chapter" style={{ marginBottom: 44 }}>
+            <ChapterNum n="01" />
+            <ChapterTitle>Who I am</ChapterTitle>
+            <Field label="Right now" value={identityChoice} />
+            {identityWritten && (
+              <div style={{
+                marginTop: 16, padding: '24px 28px',
+                background: '#fff',
+                borderLeft: `4px solid ${TEAL}`,
+                borderRadius: '0 6px 6px 0',
+              }}>
+                <FieldLabel>Claimed, in my own words</FieldLabel>
+                <WrittenText value={identityWritten} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 02 — What playing it small was costing me */}
+        {(costChoice || costWritten) && (
+          <div className="print-chapter" style={{ marginBottom: 44 }}>
+            <ChapterNum n="02" />
+            <ChapterTitle>What playing it small was costing me</ChapterTitle>
+            <Field label="The cost I named" value={costChoice} />
+            {costWritten && (
+              <div style={{
+                marginTop: 12, padding: '20px 24px',
+                background: '#fff',
+                borderLeft: `4px solid ${CORAL}`,
+                borderRadius: '0 6px 6px 0',
+              }}>
+                <FieldLabel>Specifically</FieldLabel>
+                <WrittenText value={costWritten} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 03 — What I learned and what I am facing */}
+        {(lessonsLearned.length > 0 || primaryFear) && (
+          <div className="print-chapter" style={{ marginBottom: 44 }}>
+            <ChapterNum n="03" />
+            <ChapterTitle>What I learned and what I am facing</ChapterTitle>
+            {lessonsLearned.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <FieldLabel>What my last trip actually taught me</FieldLabel>
+                <BulletList items={lessonsLearned} />
+              </div>
+            )}
+            <Field label="The fear my next destination addresses" value={primaryFear} />
+          </div>
+        )}
+
+        {/* 04 — Where I am going */}
+        {destination && (
+          <div className="print-chapter" style={{ marginBottom: 44 }}>
+            <ChapterNum n="04" />
+            <ChapterTitle>Where I am going</ChapterTitle>
+            <div style={{
+              padding: '28px 32px', background: TEAL,
+              borderRadius: 6, textAlign: 'center',
+            }}>
+              <div style={{
+                fontSize: 11, fontWeight: 700,
+                letterSpacing: '3px', textTransform: 'uppercase',
+                color: GOLD, marginBottom: 10,
+              }}>Next destination</div>
+              <div style={{ fontSize: 30, fontWeight: 700, color: CREAM, letterSpacing: '0.5px' }}>
+                {destination}
+              </div>
+              {stretchFactors.length > 0 && (
+                <div style={{
+                  marginTop: 16, paddingTop: 16,
+                  borderTop: `1px solid rgba(212, 165, 116, 0.3)`,
+                  fontSize: 12, color: GOLD, letterSpacing: '1.5px',
+                }}>
+                  Stretching on: {stretchFactors.join(' · ')}
+                </div>
+              )}
+            </div>
+            {choosingOrSettling && (
+              <div style={{ marginTop: 20 }}>
+                <Field label="How I am approaching this" value={choosingOrSettling} />
+              </div>
+            )}
+            {destWritten && (
+              <div style={{
+                marginTop: 8, padding: '20px 24px',
+                background: '#fff',
+                borderLeft: `4px solid ${TEAL}`,
+                borderRadius: '0 6px 6px 0',
+              }}>
+                <FieldLabel>Why this destination</FieldLabel>
+                <WrittenText value={destWritten} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 05 — My travel year */}
+        {(tripCount || trips.length > 0) && (
+          <div className="print-chapter" style={{ marginBottom: 44 }}>
+            <ChapterNum n="05" />
+            <ChapterTitle>My travel year</ChapterTitle>
+            {tripCount && <Field label="Solo trips this year" value={String(tripCount)} />}
+            {trips.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <FieldLabel>The trips</FieldLabel>
+                <div style={{ marginTop: 4 }}>
+                  {trips.map((trip, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'flex-start', gap: 16,
+                      padding: '14px 0',
+                      borderBottom: i < trips.length - 1 ? `1px solid ${BORDER_SOFT}80` : 'none',
+                    }}>
+                      <div style={{
+                        flexShrink: 0,
+                        width: 60,
+                        fontSize: 13, fontWeight: 700,
+                        color: TEAL, letterSpacing: '1px',
+                      }}>
+                        {trip.quarter || `Trip ${trip.tripNumber || i + 1}`}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 16, color: CHARCOAL, fontWeight: 600, lineHeight: 1.4 }}>
+                          {trip.destination || 'To be decided'}
+                        </div>
+                        {trip.quarterMonths && (
+                          <div style={{ fontSize: 12.5, color: TEXT_SOFT, marginTop: 2 }}>
+                            {trip.quarterMonths}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 06 — The path to booking */}
+        {(targetAmount || monthlyAmount || monthsToBooking) && (
+          <div className="print-chapter" style={{ marginBottom: 44 }}>
+            <ChapterNum n="06" />
+            <ChapterTitle>The path to booking</ChapterTitle>
+            {monthsToBooking !== null && monthsToBooking !== undefined && destination && (
+              <div style={{
+                padding: '28px 32px',
+                background: `linear-gradient(135deg, ${CREAM} 0%, #f0ebe0 100%)`,
+                border: `2px solid ${GOLD}`, borderRadius: 8,
+                textAlign: 'center', marginBottom: 24,
+              }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 700,
+                  letterSpacing: '3px', textTransform: 'uppercase',
+                  color: GOLD_DARK, marginBottom: 10,
+                }}>The countdown</div>
+                <div style={{ fontSize: 22, lineHeight: 1.4, color: CHARCOAL, fontWeight: 600 }}>
+                  {monthsToBooking} {monthsToBooking === 1 ? 'month' : 'months'} from booking {destination}
+                </div>
+              </div>
+            )}
+            <Field label="Cost target" value={fmtMoney(targetAmount)} />
+            {targetDate && <Field label="Target date" value={targetDate} />}
+            <Field label="Monthly into the travel fund" value={fmtMoney(monthlyAmount)} />
+            {currentSavings !== undefined && targetAmount && (
+              <Field label="Saved so far" value={`${fmtMoney(currentSavings)} of ${fmtMoney(targetAmount)}`} />
+            )}
+            {remainingToTarget !== undefined && remainingToTarget !== null && (
+              <Field label="Remaining" value={fmtMoney(remainingToTarget)} />
+            )}
+          </div>
+        )}
+
+        {/* 07 — My one no */}
+        {(tradeoffCategory || tradeoffSpecific) && (
+          <div className="print-chapter" style={{ marginBottom: 44 }}>
+            <ChapterNum n="07" />
+            <ChapterTitle>My one no</ChapterTitle>
+            <Field label="The category" value={tradeoffCategory} />
+            {tradeoffSpecific && (
+              <div style={{
+                marginTop: 12, padding: '20px 24px',
+                background: '#fff',
+                borderLeft: `4px solid ${CORAL}`,
+                borderRadius: '0 6px 6px 0',
+              }}>
+                <FieldLabel>The specific no</FieldLabel>
+                <WrittenText value={tradeoffSpecific} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 08 — Beyond the tourist bubble */}
+        {touristActions.length > 0 && (
+          <div className="print-chapter" style={{ marginBottom: 44 }}>
+            <ChapterNum n="08" />
+            <ChapterTitle>Beyond the tourist bubble</ChapterTitle>
+            <FieldLabel>My commitments on this trip</FieldLabel>
+            <BulletList items={touristActions} />
+          </div>
+        )}
+
+        {/* 09 — How long I am staying */}
+        {(durationChoice || accommodation) && (
+          <div className="print-chapter" style={{ marginBottom: 44 }}>
+            <ChapterNum n="09" />
+            <ChapterTitle>How long I am staying</ChapterTitle>
+            <Field label="Trip duration" value={durationChoice} />
+            <Field label="Accommodation" value={accommodation} />
+          </div>
+        )}
+
+        {/* 10 — My debrief, waiting (FILL-IN AFTER TRIP) */}
+        {(debrief48 || debriefQuestions.length > 0) && (
+          <div className="print-chapter print-chapter-newpage" style={{ marginBottom: 44 }}>
+            <ChapterNum n="10" />
+            <ChapterTitle>My debrief, waiting</ChapterTitle>
+            <Field label="Within 48 hours of landing" value={debrief48} />
+
+            {debriefQuestions.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <FieldLabel>The four questions ready for me</FieldLabel>
+                <div style={{
+                  marginTop: 12,
+                  padding: '18px 22px',
+                  background: '#fff',
+                  border: `1px solid ${BORDER_SOFT}`,
+                  borderRadius: 6,
+                }}>
+                  {debriefQuestions.map((q, i) => (
+                    <div key={i} className="print-debrief-question" style={{
+                      marginBottom: i < debriefQuestions.length - 1 ? 18 : 0,
+                    }}>
+                      <div style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}>
+                        <div style={{
+                          flexShrink: 0,
+                          width: 26, height: 26, borderRadius: '50%',
+                          background: `${TEAL}15`, color: TEAL,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 12, fontWeight: 700,
+                        }}>{q.number || i + 1}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ marginBottom: 2 }}>
+                            <strong style={{ color: TEAL, fontWeight: 700, fontSize: 14.5 }}>{q.label}.</strong>{' '}
+                            <span style={{ color: CHARCOAL, fontSize: 14.5, lineHeight: 1.55, fontWeight: 500 }}>{q.question}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <WritingLines count={4} height={24} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 11 — My re-entry plan */}
+        {(reEntry48 || reEntryTwoWeek || reEntryWritten) && (
+          <div className="print-chapter" style={{ marginBottom: 24 }}>
+            <ChapterNum n="11" />
+            <ChapterTitle>My re-entry plan</ChapterTitle>
+            <Field label="Window one · 48 hours" value={reEntry48} />
+            <Field label="Window two · two weeks" value={reEntryTwoWeek} />
+            {reEntryWritten && (
+              <div style={{
+                marginTop: 18, padding: '28px 32px',
+                background: `linear-gradient(135deg, ${CREAM} 0%, #f0ebe0 100%)`,
+                border: `2px solid ${GOLD}`, borderRadius: 8,
+              }}>
+                <FieldLabel>For the day real life pushes back</FieldLabel>
+                <WrittenText
+                  value={reEntryWritten}
+                  stemLabels={{
+                    rememberWhenPushedBack: 'What I want to remember',
+                    versionWhoCameHome: 'The version of me who just came home would say',
+                  }}
+                />
+                <div style={{
+                  marginTop: 20, paddingTop: 14,
+                  borderTop: `1px solid ${GOLD}`,
+                  fontSize: 12, color: GOLD_DARK, fontStyle: 'italic', textAlign: 'right', fontWeight: 500,
+                }}>
+                  — {firstName}, to herself
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+
+      {/* ============ CLOSING / YOUR NEXT LEVEL ============ */}
+      <div className="print-footer" style={{
+        background: CREAM, padding: '40px 48px 32px',
+        borderTop: `1px solid ${BORDER_SOFT}`, textAlign: 'center',
+      }}>
+        <GoldRule width={40} />
+
+        <div style={{
+          marginTop: 22, fontSize: 11, fontWeight: 700,
+          letterSpacing: '3px', textTransform: 'uppercase',
+          color: GOLD_DARK,
+        }}>Your Next Level</div>
+
+        <div style={{
+          marginTop: 16, fontSize: 14, color: CHARCOAL,
+          lineHeight: 1.75, fontStyle: 'italic',
+          maxWidth: 480, margin: '16px auto 0', opacity: 0.9,
+        }}>
+          When you are ready to go further, <span style={{ color: TEAL, fontWeight: 600, fontStyle: 'normal' }}>The Fearless Ones Program</span> is where this Compass becomes the starting point for the next chapter.
+        </div>
+
+        <div style={{
+          marginTop: 36, paddingTop: 24, borderTop: `1px solid ${BORDER_SOFT}`,
+        }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700,
+            letterSpacing: '4px', textTransform: 'uppercase',
+            color: GOLD_DARK, marginBottom: 8,
+          }}>{COVER_BRAND}</div>
+          <div style={{ fontSize: 11, color: TEXT_SOFT, lineHeight: 1.7 }}>
+            Completed {formatDate(completedDate)}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+// === APP ===
+function App() {
+  const [screen, setScreen] = useState('import');
+  const [progressData, setProgressData] = useState(null);
+  const [importErr, setImportErr] = useState(null);
+  const [firstName, setFirstName] = useState('');
+  const [completedDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const handleImport = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportErr(null);
+    if (!file.name.endsWith('.json')) {
+      setImportErr('That does not look like a Compass file. It should end in .json');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.sections || !data.sections.reEntryPlan) {
+          setImportErr('This file is missing your Module 5 Lesson 3 answer. Make sure you are importing BoldTraveler_Progress11.json.');
+          return;
+        }
+        setProgressData(data);
+        setScreen('welcome-back');
+      } catch (err) {
+        setImportErr('Could not read this file. Try downloading it again from Module 5 Lesson 3.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const docData = progressData ? {
+    firstName: firstName.trim() || 'You',
+    completedDate,
+    ...progressData,
+  } : null;
+
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    document.title = 'Fearless_Bold_Traveler_Compass';
+    window.print();
+    setTimeout(() => { document.title = originalTitle; }, 200);
+  };
+
+  if (screen === 'import') {
+    return (
+      <div style={wrap} className="no-print">
+        <div style={card}>
+          <Header />
+          <div style={labelStyle}>Final Words</div>
+          <h1 style={h1}>Your Compass is ready.</h1>
+          <p style={p}>
+            Eleven sections built. One last step before it becomes a keepsake.
+          </p>
+          <p style={{ ...p, fontSize: 13.5, color: TEXT_SOFT, marginBottom: 20 }}>
+            Import <strong style={{ color: TEAL }}>BoldTraveler_Progress11.json</strong> from your device.
+          </p>
+
+          <label style={{ ...primaryButton(false), cursor: 'pointer', marginBottom: 0 }}>
+            <input type="file" accept=".json,application/json" onChange={handleImport} style={{ display: 'none' }} />
+            <IconUpload size={16} /> Choose my Compass file
+          </label>
+
+          {importErr && <div style={errBox}>{importErr}</div>}
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'welcome-back') {
+    return (
+      <div style={wrap} className="no-print">
+        <div style={card}>
+          <Header />
+          <div style={labelStyle}>Welcome back, for the last time</div>
+          <h1 style={h1}>You built something real.</h1>
+          <p style={p}>
+            Across this course you stopped researching and started deciding. You named what was costing you. You chose your next level. You committed to the windows that turn one trip into a travel life.
+          </p>
+          <p style={p}>
+            Before the Compass becomes yours, put your name on it.
+          </p>
+
+          <button style={{ ...primaryButton(false), marginTop: 16 }} onClick={() => setScreen('personalize')}>
+            Make it mine <IconArrowRight size={15} />
+          </button>
+
+          <div style={{ marginTop: 16, textAlign: 'center' }}>
+            <button style={backButton} onClick={() => setScreen('import')}>
+              <IconArrowLeft size={13} /> Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'personalize') {
+    return (
+      <div style={wrap} className="no-print">
+        <div style={card}>
+          <Header />
+          <div style={labelStyle}>One last step</div>
+          <h1 style={h1}>Put your name on it.</h1>
+          <p style={{ ...p, marginBottom: 20 }}>
+            This Compass carries your name. Not a username. Not a handle. Your actual first name, on a document that is yours.
+          </p>
+
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: TEAL, marginBottom: 8, display: 'block' }}>
+              Your first name
+            </label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="The name you want on your Compass"
+              style={inputStyle}
+              autoFocus
+            />
+          </div>
+
+          <div style={{
+            padding: '12px 14px', background: `${TEAL}06`,
+            borderLeft: `3px solid ${GOLD}`, borderRadius: '0 6px 6px 0',
+            marginBottom: 20,
+          }}>
+            <div style={{ fontSize: 12.5, color: TEXT_SOFT, lineHeight: 1.6 }}>
+              Today's date — <strong style={{ color: TEAL }}>{formatDate(completedDate)}</strong> — will appear on the cover as the day you completed the course.
+            </div>
+          </div>
+
+          <button
+            style={primaryButton(!firstName.trim())}
+            onClick={() => setScreen('reveal')}
+            disabled={!firstName.trim()}
+          >
+            Reveal my Compass <IconArrowRight size={15} />
+          </button>
+
+          <div style={{ marginTop: 16, textAlign: 'center' }}>
+            <button style={backButton} onClick={() => setScreen('welcome-back')}>
+              <IconArrowLeft size={13} /> Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'reveal' && docData) {
+    return (
+      <div>
+        <div style={{ ...wrap, marginBottom: 0 }} className="no-print">
+          <div style={card}>
+            <Header />
+            <div style={labelStyle}>Your Compass</div>
+            <h1 style={h1}>{docData.firstName}, this is yours.</h1>
+            <p style={{ ...p, marginBottom: 6 }}>
+              Read through it. Sit with it.
+            </p>
+            <p style={{ ...p, marginBottom: 20 }}>
+              When you are ready, save it as a PDF and keep it somewhere you will see it.
+            </p>
+
+            <button style={goldButton} onClick={handlePrint}>
+              <IconPrinter size={15} /> Save as PDF
+            </button>
+            <p style={{ fontSize: 12, color: TEXT_MUTED, marginTop: 10, textAlign: 'center', lineHeight: 1.5 }}>
+              Your browser will open the print dialog. Choose "Save as PDF" as the destination.
+            </p>
+          </div>
+        </div>
+
+        <div className="print-area" style={{ padding: '32px 16px 80px', background: '#f4f1ea' }}>
+          <CompassDoc data={docData} />
+        </div>
+
+        <div style={{ ...wrap, paddingTop: 0 }} className="no-print">
+          <div style={card}>
+            <a
+              href={NEXT_LESSON_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ ...primaryButton(false), textDecoration: 'none' }}
+            >
+              Return to the course <IconArrowRight size={15} />
+            </a>
+            <div style={{ marginTop: 16, textAlign: 'center' }}>
+              <button style={backButton} onClick={() => setScreen('personalize')}>
+                <IconArrowLeft size={13} /> Change my name
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
+</parameter>
